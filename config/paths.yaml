@@ -1,0 +1,6 @@
+paths:
+  repository_path: "/Users/marianomaisonnave/Repositories/stance-analysis-freedom-convoy-tweets"
+  mentioners_path: 'data/raw/usersTimelines/mentioners'
+  posters_path: 'data/raw/usersTimelines/posters'
+  retweeters_path: 'data/raw/usersTimelines/retweeters'
+  

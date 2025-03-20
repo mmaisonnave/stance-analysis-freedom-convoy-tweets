@@ -21,7 +21,7 @@ Attributes:
     - _OPTIONAL_KEYS_TWEETS (set): Optional keys that may be present in a Tweet dictionary.
 
 """
-
+import re
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 
@@ -58,6 +58,7 @@ class Tweet:
     conversation_id: int
     text: str
     possibly_sensitive: bool
+    referenced_tweets: Optional[List[Dict[str, str]]] = None
 
     @staticmethod
     def is_valid_tweet_dictionary(dictionary: dict):
@@ -92,6 +93,40 @@ class Tweet:
 
         return tweet
     
+    @property
+    def hashtags(self) -> List[str]:
+        """
+        Extract hashtags from the tweet text.
+        """
+        return re.findall(r"#(\w+)", self.text)
+    
+    @property
+    def mentions(self) -> List[str]:
+        """
+        Extract mentions from the tweet text.
+        """
+        return re.findall(r"@(\w+)", self.text)
+    
+    @property
+    def urls(self) -> List[str]:
+        """
+        Extract URLs from the tweet text.
+        """
+        return re.findall(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", self.text)
+    
+    @property
+    def is_retweet(self,):
+        """
+        Check if a tweet is a retweet.
+        """
+        is_retweet =  hasattr(self, 'referenced_tweets') and \
+            self.referenced_tweets is not None and any(
+                tweet['type'] == 'retweeted' for tweet in self.referenced_tweets
+            )
+        if is_retweet and not self.text.startswith("RT @"):
+            raise ValueError(f"The tweet is a retweet but the text does not match the expected pattern. id: {self.id}")
+        return is_retweet
+
 
     def __str__(self):
         """

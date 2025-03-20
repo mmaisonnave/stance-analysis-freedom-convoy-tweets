@@ -1,4 +1,4 @@
-
+import pandas as pd
 import json
 from enum import Enum
 from src import paths_handler
@@ -16,10 +16,17 @@ class DatasetType(Enum):
         POSTERS (int): Dataset containing information about posters.
         RETWEETERS (int): Dataset containing information about retweeters.
     """
-    ALL = 1
+    ALL_TIMELINES = 1
     MENTIONERS = 2
     POSTERS = 3
     RETWEETERS = 4
+    FLUTRUXKLAN = 5
+    HOLDTHELINE = 6
+    HONKHONK = 7
+    TRUCKERCONVOY2022 = 8
+    ALL_HASHTAGS=9
+    ALL=10
+
 
 
 class ConvoyProtestDataset:
@@ -96,10 +103,33 @@ class ConvoyProtestDataset:
             files = paths.get_json_filenames_from_folder('posters_path')
         elif data_type == DatasetType.RETWEETERS:
             files = paths.get_json_filenames_from_folder('retweeters_path')
-        elif data_type == DatasetType.ALL:
+        elif data_type == DatasetType.FLUTRUXKLAN:
+            files = paths.get_json_filenames_from_folder('flutruxklan_path')
+        elif data_type == DatasetType.HOLDTHELINE:
+            files = paths.get_json_filenames_from_folder('holdtheline_path')
+        elif data_type == DatasetType.HONKHONK:
+            files = paths.get_json_filenames_from_folder('honkhonk_path')
+        elif data_type == DatasetType.TRUCKERCONVOY2022:
+            files = paths.get_json_filenames_from_folder('truckerconvoy2022_path')
+        elif data_type == DatasetType.ALL_TIMELINES:
             files = paths.get_json_filenames_from_folder('mentioners_path') + \
                         paths.get_json_filenames_from_folder('posters_path') + \
                             paths.get_json_filenames_from_folder('retweeters_path')
+        elif data_type == DatasetType.ALL_HASHTAGS:
+            files = paths.get_json_filenames_from_folder('flutruxklan_path') + \
+                        paths.get_json_filenames_from_folder('holdtheline_path') + \
+                            paths.get_json_filenames_from_folder('honkhonk_path') + \
+                                paths.get_json_filenames_from_folder('truckerconvoy2022_path')
+            
+        elif data_type == DatasetType.ALL:
+            files = paths.get_json_filenames_from_folder('mentioners_path') + \
+                        paths.get_json_filenames_from_folder('posters_path') + \
+                            paths.get_json_filenames_from_folder('retweeters_path') + \
+                                paths.get_json_filenames_from_folder('flutruxklan_path') + \
+                                    paths.get_json_filenames_from_folder('holdtheline_path') + \
+                                        paths.get_json_filenames_from_folder('honkhonk_path') + \
+                                            paths.get_json_filenames_from_folder('truckerconvoy2022_path')
+    
         else:
             raise ValueError(f"Invalid DatasetType: {data_type}")
 
@@ -119,6 +149,18 @@ class ConvoyProtestDataset:
 
 
         return all_users, all_tweets, all_places
+
+    @staticmethod
+    def get_timelines_usernames():
+        paths = paths_handler.PathsHandler()
+
+        return pd.read_csv(
+            paths.get_path('timeline_usernames_and_userids'),
+            dtype={"user_id": str}
+        )
+        
+
+
 
 
 

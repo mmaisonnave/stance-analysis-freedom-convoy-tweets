@@ -3,4 +3,8 @@ paths:
   mentioners_path: 'data/raw/usersTimelines/mentioners'
   posters_path: 'data/raw/usersTimelines/posters'
   retweeters_path: 'data/raw/usersTimelines/retweeters'
-  
+  timeline_usernames_and_userids: 'data/raw/usersTimelines/user_timelines_usernames_and_userids.csv'
+  flutruxklan_path: 'data/raw/Hashtags/hashtags before merging/FluTruxKlan'
+  holdtheline_path: 'data/raw/Hashtags/hashtags before merging/HoldTheLine'
+  honkhonk_path: 'data/raw/Hashtags/hashtags before merging/HonkHonk'
+  truckerconvoy2022_path: 'data/raw/Hashtags/hashtags before merging/TruckerConvoy2022'

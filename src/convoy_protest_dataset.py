@@ -158,10 +158,14 @@ class ConvoyProtestDataset:
             paths.get_path('timeline_usernames_and_userids'),
             dtype={"user_id": str}
         )
-        
+    @staticmethod
+    def get_relevant_users_duplicated_removed():
+        paths = paths_handler.PathsHandler()
 
-
-
+        return pd.read_csv(
+            paths.get_path('relevant_user_db'),
+            dtype={"user_id": str}
+        )
 
 
 

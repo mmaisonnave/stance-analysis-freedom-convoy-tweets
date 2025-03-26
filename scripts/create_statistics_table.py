@@ -16,9 +16,16 @@ paths_handler = PathsHandler()
 
 # Define dataset types
 DATASET_TYPES = [
-    DatasetType.POSTERS, DatasetType.MENTIONERS, 
-    DatasetType.RETWEETERS, DatasetType.ALL_TIMELINES, DatasetType.FLUTRUXKLAN, DatasetType.HOLDTHELINE,
-    DatasetType.HONKHONK, DatasetType.TRUCKERCONVOY2022, DatasetType.ALL_HASHTAGS,
+    DatasetType.POSTERS, 
+    DatasetType.MENTIONERS, 
+    DatasetType.RETWEETERS, 
+    DatasetType.ALL_TIMELINES, 
+    DatasetType.FLUTRUXKLAN, 
+    DatasetType.HOLDTHELINE,
+    DatasetType.HONKHONK, 
+    DatasetType.TRUCKERCONVOY2022, 
+    DatasetType.ISTANDWITHTRUCKERS, 
+    DatasetType.ALL_HASHTAGS,
     DatasetType.ALL
 ]
 

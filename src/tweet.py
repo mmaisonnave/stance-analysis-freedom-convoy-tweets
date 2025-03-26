@@ -21,10 +21,13 @@ Attributes:
     - _OPTIONAL_KEYS_TWEETS (set): Optional keys that may be present in a Tweet dictionary.
 
 """
+import pandas as pd
 import string
 import re
 from typing import Dict, List, Optional
 from dataclasses import dataclass
+from typing import Type
+
 
 @dataclass
 class Tweet:
@@ -116,6 +119,25 @@ class Tweet:
         return re.findall(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", self.text)
     
     @property
+    def is_valid(self,):
+        """
+        Check if a tweet is valid.
+
+        In one of the databases (DatasetType.ISTANDWITHTRUCKERS), there are tweets that are retweets but do not start with "RT @".
+        Tweet id 1486076965471849984 has the following text:
+        "@xxxxx's account is temporarily unavailable because it violates the Twitter Media Policy. Learn more."
+        Real handle of author @xxxxx is hidden for privacy reasons.
+        
+        """
+        is_retweet =  hasattr(self, 'referenced_tweets') and \
+            self.referenced_tweets is not None and any(
+                tweet['type'] == 'retweeted' for tweet in self.referenced_tweets
+            )
+        if is_retweet and not self.text.startswith("RT @"):
+            return False
+        return True
+
+    @property
     def is_retweet(self,):
         """
         Check if a tweet is a retweet.
@@ -168,3 +190,43 @@ class Tweet:
         Return a formal string representation of the Tweet object showing only author_id, id, and text.
         """
         return f"Tweet(author_id={self.author_id}, id={self.id}, text={repr(self.text)})"
+
+    @staticmethod
+    def _parse_referenced_tweets(row):
+        """
+        Parse the referenced tweets from a row in the XLSX file.
+        """
+        if pd.notna(row['referenced_tweet_id']) and pd.notna(row['referenced_tweet_type']):
+            return [{'type': row['referenced_tweet_type'], 'id': str(row['referenced_tweet_id'])}]
+        return None
+
+    @staticmethod
+    def transform_xlsx_to_tweets(xlsx_filepath: str) -> List["Tweet"]:
+        """
+        Transform an XLSX file containing tweet data into a list of Tweet objects.
+        """
+        tweets = []
+        df = pd.read_excel(xlsx_filepath)
+        
+        for _, row in df.iterrows():
+            tweet = Tweet(
+                lang=row['language'],
+                author_id=int(row['userid']),
+                public_metrics={
+                    'retweet_count': int(row['retweet_count']),
+                    'reply_count': int(row['reply_count']),
+                    'like_count': int(row['like_count']),
+                    'quote_count': int(row['quote_count']),
+                    'bookmark_count': 0,  # Not available in XLSX, set to 0
+                    'impression_count': 0  # Not available in XLSX, set to 0
+                },
+                created_at=row['date'],
+                id=int(row['tweet_id']),
+                conversation_id=int(row['tweet_id']) if pd.isna(row['in_reply_to_tweet_id']) else int(row['in_reply_to_tweet_id']),
+                text=row['text'],
+                possibly_sensitive=str(row['possibly_sensitive']).lower() == 'true',
+                referenced_tweets=Tweet._parse_referenced_tweets(row)
+            )
+            tweets.append(tweet)
+        
+        return tweets

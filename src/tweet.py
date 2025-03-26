@@ -21,6 +21,7 @@ Attributes:
     - _OPTIONAL_KEYS_TWEETS (set): Optional keys that may be present in a Tweet dictionary.
 
 """
+import string
 import re
 from typing import Dict, List, Optional
 from dataclasses import dataclass
@@ -127,6 +128,34 @@ class Tweet:
             raise ValueError(f"The tweet is a retweet but the text does not match the expected pattern. id: {self.id}")
         return is_retweet
 
+    @property
+    def is_reply(self, ) -> bool:
+        """
+        Check if a tweet is a reply.
+        """
+        is_reply =  hasattr(self, 'referenced_tweets') and \
+            self.referenced_tweets is not None and any(
+                tweet['type'] == 'replied_to' for tweet in self.referenced_tweets
+            )
+        return is_reply
+
+    @property
+    def sanitized_text(self,):
+        """
+        Return the tweet text without hashtags, mentions, URLs, and punctuation.
+        """
+        text = self.text.lstrip('RT ')  # Remove 'RT ' if it exists
+        
+        # Remove hashtags, mentions, and URLs efficiently
+        for item in self.hashtags + self.mentions:
+            text = text.replace(f'#{item}', '').replace(f'@{item}', '')
+        for url in self.urls:
+            text = text.replace(url, '')
+
+        # Remove punctuation efficiently using str.translate
+        text = text.translate(str.maketrans('', '', string.punctuation)).strip()
+        
+        return text
 
     def __str__(self):
         """

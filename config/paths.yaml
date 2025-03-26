@@ -8,4 +8,5 @@ paths:
   holdtheline_path: 'data/raw/Hashtags/hashtags before merging/HoldTheLine'
   honkhonk_path: 'data/raw/Hashtags/hashtags before merging/HonkHonk'
   truckerconvoy2022_path: 'data/raw/Hashtags/hashtags before merging/TruckerConvoy2022'
-  relevant_user_db: 'data/raw/usersTimelines/relevant_users_duplicated_removed.csv'
+  relevant_user_db: 'data/generated/usersTimelines/relevant_users_duplicated_removed.csv'
+  statistics_table: 'data/generated/statistics_table.csv'

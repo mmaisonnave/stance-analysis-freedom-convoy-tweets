@@ -21,6 +21,8 @@ Attributes:
     - _OPTIONAL_KEYS_TWEETS (set): Optional keys that may be present in a Tweet dictionary.
 
 """
+
+from datetime import datetime
 import pandas as pd
 import string
 import re
@@ -57,7 +59,7 @@ class Tweet:
     lang: str
     author_id: int
     public_metrics: Dict[str, int]
-    created_at: str
+    created_at: datetime
     id: int
     conversation_id: int
     text: str
@@ -83,7 +85,7 @@ class Tweet:
             dictionary['lang'],
             dictionary['author_id'],
             dictionary['public_metrics'],
-            dictionary['created_at'],
+            datetime.strptime(dictionary['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
             dictionary['id'],
             dictionary['conversation_id'],
             dictionary['text'],
@@ -102,7 +104,11 @@ class Tweet:
         """
         Extract hashtags from the tweet text.
         """
-        return re.findall(r"#(\w+)", self.text)
+
+        # TO-DO: remove hashtag only numbers "#1"
+        # TO-DO: normalize by doing everything lowercase #MahsaAmini == #mahsaamini
+        hashtags = re.findall(r"#(\w+)", self.text.lower())
+        return [hashtag for hashtag in hashtags if not hashtag.isdigit() and len(hashtag)>1]
     
     @property
     def mentions(self) -> List[str]:
@@ -127,7 +133,7 @@ class Tweet:
         Tweet id 1486076965471849984 has the following text:
         "@xxxxx's account is temporarily unavailable because it violates the Twitter Media Policy. Learn more."
         Real handle of author @xxxxx is hidden for privacy reasons.
-        
+
         """
         is_retweet =  hasattr(self, 'referenced_tweets') and \
             self.referenced_tweets is not None and any(
@@ -220,7 +226,7 @@ class Tweet:
                     'bookmark_count': 0,  # Not available in XLSX, set to 0
                     'impression_count': 0  # Not available in XLSX, set to 0
                 },
-                created_at=row['date'],
+                created_at=datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                 id=int(row['tweet_id']),
                 conversation_id=int(row['tweet_id']) if pd.isna(row['in_reply_to_tweet_id']) else int(row['in_reply_to_tweet_id']),
                 text=row['text'],

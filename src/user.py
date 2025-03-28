@@ -38,7 +38,7 @@ Usage:
 This module ensures consistency when handling user data and provides validation for user dictionaries.
 """
 
-
+from datetime import datetime
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -69,7 +69,7 @@ class User:
 
     protected: bool
     username: str
-    created_at: str
+    created_at: datetime
     name: str
     description: str
     entities: Dict
@@ -91,7 +91,7 @@ class User:
             return User(
                 protected=dictionary['protected'],
                 username=dictionary['username'],
-                created_at=dictionary['created_at'],
+                created_at=datetime.strptime(dictionary['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                 name=dictionary['name'],
                 description=dictionary['description'],
                 verified=dictionary['verified'],

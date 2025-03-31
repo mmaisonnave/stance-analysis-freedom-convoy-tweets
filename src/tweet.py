@@ -57,11 +57,11 @@ class Tweet:
     }
 
     lang: str
-    author_id: int
+    author_id: str
     public_metrics: Dict[str, int]
     created_at: datetime
-    id: int
-    conversation_id: int
+    id: str
+    conversation_id: str
     text: str
     possibly_sensitive: bool
     referenced_tweets: Optional[List[Dict[str, str]]] = None
@@ -83,11 +83,11 @@ class Tweet:
 
         tweet = Tweet(
             dictionary['lang'],
-            dictionary['author_id'],
+            str(dictionary['author_id']),
             dictionary['public_metrics'],
             datetime.strptime(dictionary['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-            dictionary['id'],
-            dictionary['conversation_id'],
+            str(dictionary['id']),
+            str(dictionary['conversation_id']),
             dictionary['text'],
             dictionary['possibly_sensitive']
         )
@@ -189,13 +189,13 @@ class Tweet:
         """
         Return a string representation of the Tweet object showing only author_id, id, and text.
         """
-        return f"Tweet(author_id={self.author_id}, id={self.id}, text={self.text})"
+        return f"Tweet(author_id={self.author_id}, id={self.id}, text={self.text}, date={self.created_at})"
 
     def __repr__(self):
         """
         Return a formal string representation of the Tweet object showing only author_id, id, and text.
         """
-        return f"Tweet(author_id={self.author_id}, id={self.id}, text={repr(self.text)})"
+        return f"Tweet(author_id={self.author_id}, id={self.id}, text={self.text}, date={self.created_at})"
 
     @staticmethod
     def _parse_referenced_tweets(row):
@@ -217,7 +217,7 @@ class Tweet:
         for _, row in df.iterrows():
             tweet = Tweet(
                 lang=row['language'],
-                author_id=int(row['userid']),
+                author_id=str(row['userid']),
                 public_metrics={
                     'retweet_count': int(row['retweet_count']),
                     'reply_count': int(row['reply_count']),
@@ -227,8 +227,8 @@ class Tweet:
                     'impression_count': 0  # Not available in XLSX, set to 0
                 },
                 created_at=datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-                id=int(row['tweet_id']),
-                conversation_id=int(row['tweet_id']) if pd.isna(row['in_reply_to_tweet_id']) else int(row['in_reply_to_tweet_id']),
+                id=str(row['tweet_id']),
+                conversation_id=str(row['tweet_id']) if pd.isna(row['in_reply_to_tweet_id']) else int(row['in_reply_to_tweet_id']),
                 text=row['text'],
                 possibly_sensitive=str(row['possibly_sensitive']).lower() == 'true',
                 referenced_tweets=Tweet._parse_referenced_tweets(row)

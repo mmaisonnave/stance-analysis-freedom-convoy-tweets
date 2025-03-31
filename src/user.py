@@ -96,7 +96,7 @@ class User:
                 description=dictionary['description'],
                 verified=dictionary['verified'],
                 profile_image_url=dictionary['profile_image_url'],
-                id=dictionary['id'],
+                id=str(dictionary['id']),
                 public_metrics=dictionary['public_metrics'],
                 withheld=dictionary.get('withheld'),
                 url=dictionary.get('url'),

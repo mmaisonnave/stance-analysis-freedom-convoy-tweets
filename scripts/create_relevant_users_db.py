@@ -46,9 +46,9 @@ def main():
         if not pd.isna(userid):
             # Store ID information
             if userid not in userid2source:
-                userid2source[str(userid)] = {source} 
+                userid2source[userid] = {source} 
             else:
-                userid2source[str(userid)].add(source)
+                userid2source[userid].add(source)
         
         if username not in username2source:
             username2source[username] = {source}
@@ -85,17 +85,17 @@ def main():
     
     relevant_users=[]
     for user in users:
-        if str(user.id) in userid2source or user.username in username2source:
+        if user.id in userid2source or user.username in username2source:
             # User is relevant, we need to store in relevant_user list:
             source = set()
-            if str(user.id) in userid2source:
-                source = source.union(userid2source[str(user.id)])
+            if user.id in userid2source:
+                source = source.union(userid2source[user.id])
             if user.username in username2source:
                 source = source.union(username2source[user.username])
             source = sorted(source)
 
             relevant_users.append(
-                (str(user.id), user.username, tuple(source))
+                (user.id, user.username, tuple(source))
             )
 
     # ADDITIONAL CODE, UNUSED.
@@ -137,25 +137,28 @@ def main():
     author_id2data = {}
     relevant_ids = {id_ for id_, _,_ in relevant_users}
 
+    visited = set()
     for tweet in tweets:
-        if str(tweet.author_id) in author_id2data and str(tweet.author_id) in relevant_ids:
-            begin, tweet_count, end = author_id2data[str(tweet.author_id)]
-            tweet_count+=1
-            date = tweet.created_at
-            
-            assert not date is None
-            begin = min(begin, date)
-            end = max(end, date)
+        if tweet.id not in visited:
+            visited.add(tweet.id)
+            if tweet.author_id in author_id2data and tweet.author_id in relevant_ids:
+                begin, tweet_count, end = author_id2data[tweet.author_id]
+                tweet_count+=1
+                date = tweet.created_at
+                
+                assert not date is None
+                begin = min(begin, date)
+                end = max(end, date)
 
-            author_id2data[str(tweet.author_id)]=(begin, tweet_count, end)
-        else:
-            author_id2data[str(tweet.author_id)] = (tweet.created_at,
-                                                    0,
-                                                    tweet.created_at
-                                                    )
+                author_id2data[tweet.author_id]=(begin, tweet_count, end)
+            else:
+                author_id2data[tweet.author_id] = (tweet.created_at,
+                                                        1,
+                                                        tweet.created_at
+                                                        )
         
 
-    relevant_users = [(user_id, username, source, *author_id2data[str(user_id)])
+    relevant_users = [(user_id, username, source, *author_id2data[user_id])
                      for user_id, username, source in relevant_users]
 
 

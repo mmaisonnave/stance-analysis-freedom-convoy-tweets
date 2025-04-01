@@ -30,7 +30,6 @@ from typing import Dict, List, Optional
 from dataclasses import dataclass
 from typing import Type
 
-
 @dataclass
 class Tweet:
     """
@@ -65,6 +64,8 @@ class Tweet:
     text: str
     possibly_sensitive: bool
     referenced_tweets: Optional[List[Dict[str, str]]] = None
+    author_username: Optional[str] = None
+
 
     @staticmethod
     def is_valid_tweet_dictionary(dictionary: dict):
@@ -189,50 +190,10 @@ class Tweet:
         """
         Return a string representation of the Tweet object showing only author_id, id, and text.
         """
-        return f"Tweet(author_id={self.author_id}, id={self.id}, text={self.text}, date={self.created_at})"
+        return f"Tweet(author_id={self.author_id}, id={self.id}, text={self.text.replace('\n','\\n')}, date={self.created_at})"
 
     def __repr__(self):
         """
         Return a formal string representation of the Tweet object showing only author_id, id, and text.
         """
-        return f"Tweet(author_id={self.author_id}, id={self.id}, text={self.text}, date={self.created_at})"
-
-    @staticmethod
-    def _parse_referenced_tweets(row):
-        """
-        Parse the referenced tweets from a row in the XLSX file.
-        """
-        if pd.notna(row['referenced_tweet_id']) and pd.notna(row['referenced_tweet_type']):
-            return [{'type': row['referenced_tweet_type'], 'id': str(row['referenced_tweet_id'])}]
-        return None
-
-    @staticmethod
-    def transform_xlsx_to_tweets(xlsx_filepath: str) -> List["Tweet"]:
-        """
-        Transform an XLSX file containing tweet data into a list of Tweet objects.
-        """
-        tweets = []
-        df = pd.read_excel(xlsx_filepath)
-        
-        for _, row in df.iterrows():
-            tweet = Tweet(
-                lang=row['language'],
-                author_id=str(row['userid']),
-                public_metrics={
-                    'retweet_count': int(row['retweet_count']),
-                    'reply_count': int(row['reply_count']),
-                    'like_count': int(row['like_count']),
-                    'quote_count': int(row['quote_count']),
-                    'bookmark_count': 0,  # Not available in XLSX, set to 0
-                    'impression_count': 0  # Not available in XLSX, set to 0
-                },
-                created_at=datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%S.%fZ"),
-                id=str(row['tweet_id']),
-                conversation_id=str(row['tweet_id']) if pd.isna(row['in_reply_to_tweet_id']) else int(row['in_reply_to_tweet_id']),
-                text=row['text'],
-                possibly_sensitive=str(row['possibly_sensitive']).lower() == 'true',
-                referenced_tweets=Tweet._parse_referenced_tweets(row)
-            )
-            tweets.append(tweet)
-        
-        return tweets
+        return f"Tweet(author_id={self.author_id}, id={self.id}, text={self.text.replace('\n','\\n')}, date={self.created_at})"

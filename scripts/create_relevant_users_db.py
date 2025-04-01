@@ -16,6 +16,16 @@ the user_id, username, and sources in a list.
 Finally, it creates a DataFrame from the list and stores it in a CSV file.
 
 
+WARNING: When finding the first and last tweet date and the tweet count for each user
+         we traverse the list of Tweets (ALL tweets). We use the tweet.id and 
+         tweet.author_id ids to find those tweets.
+         
+         Because the #IStandWithTrucker hashtag has some errors in the ids, the
+         computation of first tweet, last tweet and tweet count can be slightly off
+         since some tweets from that hashtag might be miss. Unfortunately, the correct
+         ids cannot be recover, so the problem cannot be fixed. 
+
+
 """
 import sys
 import pandas as pd
@@ -128,10 +138,10 @@ def main():
     #             )
     # END OF ADDITIONAL CODE.
 
+
+
     # Traverse tweet list to find first tweet and last tweet for each user, also
     # begin, tweet count, end,
-
-
     relevant_users = list(set(relevant_users))
 
     author_id2data = {}

@@ -1,8 +1,10 @@
+from datetime import datetime
 import pandas as pd
 import json
 from enum import Enum
 from src import paths_handler
 from itertools import chain
+from typing import Dict, List, Optional
 
 from src.tweet import Tweet
 from src.user import User
@@ -113,7 +115,10 @@ class ConvoyProtestDataset:
 
         # Handle dataset types and combine files as necessary
         if data_type == DatasetType.ISTANDWITHTRUCKERS:
-            tweets = Tweet.transform_xlsx_to_tweets(paths.get_path(folder_map[DatasetType.ISTANDWITHTRUCKERS]))
+            tweets = ConvoyProtestDataset._transform_xlsx_to_tweets(
+                paths.get_path(folder_map[DatasetType.ISTANDWITHTRUCKERS])
+            )
+            
             return [], [tweet for tweet in tweets if tweet.is_valid], []
 
         elif data_type in folder_map:
@@ -258,7 +263,121 @@ class ConvoyProtestDataset:
             dtype={"user_id": str}
         )
 
+    @staticmethod
+    def get_userid_to_username_map():
+        """
+        Loads and returns a mapping of user IDs to usernames from a JSON file.
+        """
+        paths = paths_handler.PathsHandler()
+
+        input_filename = paths.get_path('userid2usernames_map')
+
+        with open(input_filename, 'r', encoding='utf-8') as f:
+            userid2usernames = json.load(f)
+        return userid2usernames
+    
+    # @staticmethod
+    # def get_username_2_userid_map():
+    #     """
+    #     Loads and returns a mapping of user IDs to usernames from a JSON file.
+    #     """
+    #     paths = paths_handler.PathsHandler()
+
+    #     input_filename = paths.get_path('userid2usernames_map')
+
+    #     with open(input_filename, 'r', encoding='utf-8') as f:
+    #         userid2usernames = json.load(f)
+
+        # username2userid = {}
+        # for user_id, usernames in userid2usernames.items():
+        #     for username in usernames:
+        #         username2userid[username]=user_id
+
+    #     return username2userid
+
+    @staticmethod
+    def _parse_referenced_tweets(row):
+        """
+        Parse the referenced tweets from a row in the XLSX file.
+
+        Used in _transform_xlsx_to_tweets only. 
+        """
+        if pd.notna(row['referenced_tweet_id']) and pd.notna(row['referenced_tweet_type']):
+            return [{'type': row['referenced_tweet_type'], 'id': str(row['referenced_tweet_id'])}]
+        return None
 
 
+    @staticmethod
+    def _transform_xlsx_to_tweets(xlsx_filepath: str) -> List["Tweet"]:
+        """
+        Transform an XLSX file containing tweet data into a list of Tweet objects.
+
+        Warning: due to a problem in the XLSX file, the `Tweet.id` and `Tweet.author_id` might be wrong
+        due to a truncating issue, I was given columns with id that were truncated to be too long integers.
+        Example:
+            real_id:        `1423712307616643072`
+            column in xlsx: `1423712307616640000` (last four digits truncated to zero).
+        """
+
+        userid2usernames = ConvoyProtestDataset.get_userid_to_username_map()
+
+        # Flip userid2usernames map to username2userid:
+        # Because I cannot trust the author_id, I need to use the username which I can trust to bring
+        # the real id from the User database we have (built from json not from xlsx).
+        # So, our reputable source of user ids is: 
+        username2userid = {
+            username: user_id
+            for user_id, usernames in userid2usernames.items()
+            for username in usernames
+        }
 
 
+        tweets = []
+        df = pd.read_excel(xlsx_filepath)
+        
+        for _, row in df.iterrows():
+            tweet = Tweet(
+                lang=row['language'],
+                # Here I have to either pick if I would store an `N/A` when I cannot get the id from a reputable source, 
+                # or take the author id from the xlsx file (which there is a high chance is wrong).
+
+                author_id=str(username2userid[row['username']]) if row['username'] in  username2userid else 'N/A', # From reputable source (username2userid, computed from Users list)
+                # author_id=str(row['userid']),                                                                         # From xlsx
+                public_metrics={
+                    'retweet_count': int(row['retweet_count']),
+                    'reply_count': int(row['reply_count']),
+                    'like_count': int(row['like_count']),
+                    'quote_count': int(row['quote_count']),
+                    'bookmark_count': 0,  # Not available in XLSX, set to 0
+                    'impression_count': 0  # Not available in XLSX, set to 0
+                },
+                created_at=datetime.strptime(row['date'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                id=str(row['tweet_id']),
+                conversation_id=str(row['tweet_id']) if pd.isna(row['in_reply_to_tweet_id']) else int(row['in_reply_to_tweet_id']),
+                text=row['text'],
+                possibly_sensitive=str(row['possibly_sensitive']).lower() == 'true',
+                referenced_tweets=ConvoyProtestDataset._parse_referenced_tweets(row),
+                author_username=row['username']
+            )
+            tweets.append(tweet)
+        
+        return tweets
+
+    # @staticmethod
+    # def _get_userid_to_username_from_xlsx():
+    #     paths = paths_handler.PathsHandler()
+
+    #     xlsx_filepath = paths.get_path('istandwithtruckers_file')
+    #     df = pd.read_excel(xlsx_filepath)
+        
+    #     userid2username = {}
+    #     for _, row in df.iterrows():
+    #         username = row['username']
+    #         userid = row['userid']
+
+    #         if not username in userid2username:
+    #             userid2username[userid] = username
+    #         else:
+    #             assert userid2username[userid] == username
+
+    #     return userid2username

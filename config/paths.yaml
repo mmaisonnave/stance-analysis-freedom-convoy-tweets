@@ -13,3 +13,8 @@ paths:
   istandwithtruckers_file: 'data/raw/Hashtags/Hashtags after merging/IStandWithTruckers.xlsx'
   userid2usernames_map: 'data/generated/userid2username.json'
   user2hashtag_graph_filename: 'data/generated/graphs/user2hashtag_graph.csv'
+  tweet_dataframe: 'data/generated/tweet_dataframe.csv'  
+  hashtag_over_time_dataframe: 'data/generated/hashtag_over_time_dataframe.csv'
+  hashtag_over_time_plot: 'data/generated/plots/hashtag_over_time_plot.png'
+  tweets_over_time_plot: 'data/generated/plots/tweets_over_time_plot.png'
+  output_log: 'log/output.log'

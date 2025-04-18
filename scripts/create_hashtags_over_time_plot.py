@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 import pandas as pd
 from collections import defaultdict
 import matplotlib.pyplot as plt 
@@ -125,76 +126,81 @@ def main():
     palette = sns.color_palette("tab10", n_colors=len(hashtags_of_interest))
     sns.set_style("whitegrid")
 
-    plt.figure(figsize=(6.4, 4.8))
-
-    for i, hashtag in enumerate(hashtags_of_interest):
-        if hashtag in df.columns:
-            plt.plot(df['date'], df[hashtag], label=f'#{hashtag}', color=palette[i])
-            plt.fill_between(df['date'], 0, df[hashtag], alpha=0.2, color=palette[i])
-
     # Increase font sizes
     title_fontsize = 20
     label_fontsize = 16
     tick_fontsize = 14
     legend_fontsize = 14
 
-
-    plt.title('Hashtag Usage Over Time', fontsize=title_fontsize)
-    plt.xlabel('Date', fontsize=label_fontsize)
-    plt.ylabel('Percentage of Total Tweets (%)', fontsize=label_fontsize)
-
-    plt.legend(fontsize=legend_fontsize)
-    plt.grid(True)
-    plt.xticks(rotation=45, fontsize=tick_fontsize)
-    plt.yticks(fontsize=tick_fontsize)
-
-
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
-    plt.gca().xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
-
-
-    # Add vertical lines
     important_dates = [
         datetime(2022, 1, 16),
         datetime(2022, 1, 24),
-        datetime(2022, 1, 30)
+        # datetime(2022, 1, 30)
     ]
 
+    # Create two subplots (one above the other)
+    fig, (ax2, ax1) = plt.subplots(nrows=2, ncols=1, figsize=(9.6, 9.6), sharex=True)
+
+    # First plot: Hashtags usage over time
+    for i, hashtag in enumerate(hashtags_of_interest):
+        if hashtag in df.columns:
+            ax1.plot(df['date'], df[hashtag], label=f'#{hashtag}', color=palette[i])
+            ax1.fill_between(df['date'], 0, df[hashtag], alpha=0.2, color=palette[i])
+
+    ax1.set_title('Hashtag Usage Over Time', fontsize=title_fontsize)
+    ax1.set_ylabel('Percentage of Total Tweets (%)', fontsize=label_fontsize)
+
+    ax1.set_xlabel('Date', fontsize=label_fontsize)
+    ax1.legend(fontsize=legend_fontsize)
+    ax1.grid(True)
+    ax1.tick_params(axis='x', rotation=45, labelsize=tick_fontsize)
+    ax1.tick_params(axis='y', labelsize=tick_fontsize)
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
+    ax1.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
+
+    # Add vertical lines
     for date in important_dates:
-        plt.axvline(x=date, color='darkgray', linestyle='--', linewidth=1.5)
+        ax1.axvline(x=date, color='black', linestyle='--', linewidth=1.5)
 
-    plt.tight_layout()
-    plt.savefig(paths.get_path('hashtag_over_time_plot'), dpi=300)
+    # Second plot: Total tweets over time
+    ax2.plot(df['date'], df['total_tweets'], label='Total Tweets', color='purple')
+    ax2.fill_between(df['date'], 0, df['total_tweets'], alpha=0.2, color='purple')
+
+    ax2.set_title('Total Tweets Over Time', fontsize=title_fontsize)
+    ax2.set_ylabel('Total Tweets', fontsize=label_fontsize)
+    ax2.legend(fontsize=legend_fontsize)
+    ax2.grid(True)
+    ax2.tick_params(axis='x', rotation=45, labelsize=tick_fontsize)
+    ax2.tick_params(axis='y', labelsize=tick_fontsize)
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
+    ax2.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
 
 
 
 
-    # Plotting total tweets over time
-    plt.figure(figsize=(6.4, 4.8))
-    plt.plot(df['date'], df['total_tweets'], label='Total Tweets', color='purple')
-    plt.fill_between(df['date'], 0, df['total_tweets'], alpha=0.2, color='purple')
-
-    # Increase font sizes
-    plt.title('Total Tweets Over Time', fontsize=title_fontsize)
-    plt.xlabel('Date', fontsize=label_fontsize)
-    plt.ylabel('Total Tweets', fontsize=label_fontsize)
-
-    plt.legend(fontsize=legend_fontsize)
-    plt.grid(True)
-    plt.xticks(rotation=45, fontsize=tick_fontsize)
-    plt.yticks(fontsize=tick_fontsize)
-
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
-    plt.gca().xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
-
+    important_dates = [
+        datetime(2022, 1, 22),
+        datetime(2022, 2, 23),
+    ]
     # Add vertical lines (same important dates)
     for date in important_dates:
-        plt.axvline(x=date, color='darkgray', linestyle='--', linewidth=1.5)
+        ax2.axvline(x=date, color='black', linestyle='--', linewidth=1.5)
 
+
+    for ax in [ax1,ax2]:
+        # Get the current x-tick labels of the second subplot
+        xticks = ax.get_xticklabels()
+
+        # Remove the last x-tick label
+        xticks[-1].set_text('')
+
+    fig.canvas.draw()
     plt.tight_layout()
 
-    # Save the second plot to a different file
-    plt.savefig(paths.get_path('tweets_over_time_plot'), dpi=300)
+    # Save the figure
+    plt.savefig(paths.get_path('hashtags_and_total_tweets_over_time'), dpi=300)
+
+
 
     io.ok('Done with script: create_hashtags_over_time_plot.py')
 

@@ -98,7 +98,7 @@ class ConvoyProtestDataset:
         return users, tweets, places
 
     @staticmethod
-    def get_dataset(data_type: DatasetType):
+    def get_dataset(data_type: DatasetType, removed_repeated=False):
         paths = paths_handler.PathsHandler()
 
         # Map dataset types to respective folder paths
@@ -180,7 +180,52 @@ class ConvoyProtestDataset:
             
         # Tweets do not require to be filter by is_valid, the only dataset type with 
         # that problem is the ISTANDWITHTRUCKERS, which is handled above.
+        
+        if removed_repeated:
+            all_tweets = ConvoyProtestDataset._remove_repeated_tweets(all_tweets)
+            all_users = ConvoyProtestDataset._remove_repeated_users(all_users)
+            all_places = ConvoyProtestDataset._remove_repeated_places(all_places)
+
+
         return all_users, all_tweets, all_places
+
+    @staticmethod
+    def _remove_repeated_places(places: List[Place]) -> List[Place]:
+        new_list = []
+        visited = set()
+        for place in places:
+            id_ = (place.id, place.country_code)
+            if id_ not in visited:
+                visited.add(id_)
+                new_list.append(place)
+
+        return new_list
+
+
+    @staticmethod
+    def _remove_repeated_users(users: List[User]) -> List[User]:
+        new_list = []
+        visited = set()
+        for user in users:
+            id_ = (user.id, user.created_at)
+            if id_ not in visited:
+                visited.add(id_)
+                new_list.append(user)
+
+        return new_list
+
+    @staticmethod
+    def _remove_repeated_tweets(tweets: List[Tweet]) -> List[Tweet]:
+
+        new_list = []
+        visited = set()
+        for tweet in tweets:
+            id_ = (tweet.id, tweet.text, tweet.author_id)
+            if id_ not in visited:
+                visited.add(id_)
+                new_list.append(tweet)
+
+        return new_list
 
 
     # @staticmethod

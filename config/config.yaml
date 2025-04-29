@@ -1,0 +1,190 @@
+paths:
+  repository_path: "/Users/marianomaisonnave/Repositories/stance-analysis-freedom-convoy-tweets"
+  mentioners_path: 'data/raw/usersTimelines/mentioners'
+  posters_path: 'data/raw/usersTimelines/posters'
+  retweeters_path: 'data/raw/usersTimelines/retweeters'
+  timeline_usernames_and_userids: 'data/raw/usersTimelines/user_timelines_usernames_and_userids.csv'
+  flutruxklan_path: 'data/raw/Hashtags/hashtags before merging/FluTruxKlan'
+  holdtheline_path: 'data/raw/Hashtags/hashtags before merging/HoldTheLine'
+  honkhonk_path: 'data/raw/Hashtags/hashtags before merging/HonkHonk'
+  truckerconvoy2022_path: 'data/raw/Hashtags/hashtags before merging/TruckerConvoy2022'
+  relevant_user_db: 'data/generated/usersTimelines/relevant_users_duplicated_removed.csv'
+  statistics_table: 'data/generated/statistics_table.csv'
+  istandwithtruckers_file: 'data/raw/Hashtags/Hashtags after merging/IStandWithTruckers.xlsx'
+  userid2usernames_map: 'data/generated/userid2username.json'
+  user2hashtag_graph_filename: 'data/generated/graphs/user2hashtag_graph.csv'
+  tweet_dataframe: 'data/generated/tweet_dataframe.csv'  
+  hashtag_over_time_dataframe: 'data/generated/hashtag_over_time_dataframe.csv'
+  hashtags_and_total_tweets_over_time: 'data/generated/plots/hashtags_and_total_tweets_over_time.png'
+  output_log: 'log/output.log'
+  vocab-filename: 'data/generated/vocab.txt'
+  prompt-folder: 'data/generated/prompts'
+
+variables:
+  vocab-threshold: 100
+
+prompts: 
+  improved-prompt: >
+    **### Prompt Title: Political Orientation Analysis of Tweets**  
+
+    #### **Task:**  
+    Analyze the political orientation of an individual based on a sample of tweets. Assign a numerical score from **1 to 10** according to the defined scale. If a tweet does not provide sufficient political context, return **"Not enough information."**  
+
+    ---
+
+    ### **Political Orientation Scale**  
+
+    | Score | Political Alignment | Description |
+    |-------|---------------------|-------------|
+    | **1 (Far-Left/Extreme Left)** | **Revolutionary Progressivism** | Advocates for radical systemic change, including socialism, communism, abolition of capitalism, or complete restructuring of economic and social institutions. Supports wealth redistribution, abolition of traditional institutions (e.g., police, military), and collectivized economics. |
+    | **2-3 (Left/Progressive Left)** | **Strong Progressive Advocacy** | Supports significant government intervention in economic and social systems, social justice, and civil rights expansions. May advocate for policies like the Green New Deal, universal healthcare, tuition-free education, and strong labor protections. |
+    | **4 (Center-Left)** | **Moderate Progressivism** | Favors reforms within existing systems rather than overhauls. Supports regulated capitalism, social safety nets, and gradual civil rights expansion. |
+    | **5 (Centrist/Moderate)** | **Balanced or Mixed Views** | Holds a mix of progressive and conservative stances, prioritizing pragmatism and compromise over ideological consistency. May support regulated capitalism, moderate economic policies, and incremental social progress. |
+    | **6 (Center-Right)** | **Moderate Conservatism** | Supports free-market policies, lower taxes, and limited government intervention while maintaining some social safety nets. Favors traditional values with gradual social change. |
+    | **7-8 (Right/Conservative Right)** | **Strong Conservative Advocacy** | Prioritizes economic deregulation, cultural traditionalism, and national sovereignty. May oppose progressive policies on wealth redistribution, climate policies, or identity politics. |
+    | **9 (Far-Right/Nationalist Right)** | **Hardline Conservatism** | Emphasizes nationalism, strict immigration controls, and protectionist policies. Opposes diversity initiatives and global governance, often favoring strong national identity. |
+    | **10 (Extreme Right)** | **Reactionary or Authoritarian Conservatism** | Advocates for rigid social hierarchies, nationalist or exclusionary policies, and strict traditionalism. May oppose progressive civil rights movements and favor centralized authority. |
+
+    ---
+
+    ### **Factors for Assessment**  
+
+    When assigning a score, consider the following:  
+
+    - **Policy Support & Ideological References** → Does the tweet advocate for specific political policies, movements, or ideological positions?  
+    - **Language & Tone** → Is the language inclusive, confrontational, traditional, populist, or nationalist?  
+    - **Mentions of Political Figures, Movements, or Parties** → Does the tweet reference political leaders, historical movements, or parties that align with a specific ideology?  
+    - **Use of Hashtags, Keywords, or Memes** → Are politically charged terms used (e.g., `#TaxTheRich`, `#BuildTheWall`, `#AbolishPolice`, `#AmericaFirst`)?  
+    - **Context & Satire Considerations** → Could sarcasm, irony, or satire influence interpretation? If unclear, return `"Not enough information."`  
+
+    ---
+
+    ### **Scoring Output Format**  
+
+    Return the output in the following format:  
+
+    ```json
+    {
+      "score": [1-10],
+      "explanation": "Brief justification for the assigned score based on tweets content, tone, and references."
+    }
+    ```
+
+    If a tweet lacks sufficient context, return:  
+
+    ```json
+    {
+      "score": "Not enough information"
+    }
+    ```
+
+    ---
+
+    ### **Handling Media Content (URLs, Images, Videos)**  
+
+    - **URLs:** If a tweet links to external content, analyze the linked material for political alignment.  
+    - **Videos:** Assess visible text, symbols, and spoken content.  
+    - **Memes/Images:** Consider recognizable political symbols, slogans, or imagery.  
+
+    ---
+
+    ### **Additional Considerations**  
+
+    - **Coded Language & Hashtags:** Some tweets use indirect references or sarcasm—assess carefully.  
+    - **Political Neutrality:** If a tweet does not take a clear political stance, return `"Not enough information."`  
+    - **Mixed Signals:** If elements of the tweet suggest different orientations, analyze the dominant theme.  
+
+    ---
+    EXAMPLE: 
+    ## **📌 Timeline to Evaluate**  
+    USER_1: 
+    tweet 1:  @panto12 #GoHomeYouAreDrunk
+    tweet 2:  @kahnkidz canada goose says: #honkhonk
+    tweet 3:  @DuchAssofMSS What a loving young man!
+    tweet 4:  @julzd_martin Not jumping in the cesspool today #GodBlessTheQueen  #GodSaveTheKing
+    tweet 5:  @_TruthSeekerG Award goes to: Sexton and Dean of the Chapel "Holy shade"
+    tweet 6:  @thetimes @CelticTribesman @valentinelow #characternotcolor #notgivingaclick
+    tweet 7:  @wytewzrdz @ItsRobbyBitch_ canada goose says: #honkhonk
+    tweet 8:  @storiesbyjemay #GoHomeYouAreDrunk
+    tweet 9:  @SadieSEF007 @RoyallyBlunt Award goes to: Sexton and Dean of the Chapel
+    tweet 10:  @jeneps canada goose says: #honkhonk
+    tweet 11:  @litecoin_bull Diana's death 25 yrs ago
+    tweet 12:  @LaymanLogic @catturd2 Dark and creepy. Not hiding it anymore. We know who they serve.
+    tweet 13:  @MiaOuterspace77 @bettedavisthizz shoes are a mess too
+    tweet 14:  @DCLass0811 @FanCambridges #notgivingaclick #GodSaveTheKing
+    tweet 15:  @BrownieTurd puppy teeth
+    tweet 16:  @TourreBakahai @Spotify I'm glad my life is not that complicated.
+    tweet 17:  @jomilleweb #GodSaveTheKing
+    tweet 18:  @arsewellbaby eyebrows?
+    tweet 19:  @Skelmpie22 @MaggieMobrules best # ever!
+    tweet 20:  @BritishHarley2 @Remisagoodboy @dagmar_Marie77 classy, dignified, polished
+    tweet 21:  @catturd2 canada goose says: #honkhonk
+    tweet 22:  @CelticTribesman Not jumping in that cesspool today #GodBlessTheQueen  #GodSaveTheKing
+    tweet 23:  @royal_Historian Matthew 25: 23 #GodSaveTheQueen
+    tweet 24:  @memesbyky #gohomeyouaredrunk
+    tweet 25:  @DavisSalika Lottie def gives me vibes
+    tweet 26:  @catturd2 We know who they serve. Not even hiding it anymore..
+    tweet 27:  @buperac canada goose in cali says: #honkhonk
+    tweet 28:  @hrrysgreysuit 3 noses ago
+    tweet 29:  @stillgray canada goose (in michigan) says: #honkhonk
+    tweet 30:  @johnrich dark and creepy
+
+    Output:
+    {
+      "score": 7,
+      "explanation": "The tweets predominantly express right-wing nationalist or conservative sentiments, with themes of traditionalism, anti-establishment rhetoric, and skepticism toward progressive movements."
+    }
+
+    ---
+
+    ## **📌 Timeline to Evaluate**  
+    tweet 1:  McLean said he was inspired by a Facebook group, Questioning Plague Spreaders In Windsor Essex, that he joined in the early days of the pandemic.   https://t.co/9pBbK7tUui #FluTruxKlan #RamRanchResistance
+    tweet 2:  RT @TheGentYYC: I don't know about you but I sure wouldn't want my company name/truck involved with a demonstrably violent occupation that…
+    tweet 3:  This woman is braver than the #Ottawa Police, the Terrorist protectors and appeasers.  Facing those #SovereignCitizens #Qanon cult #Terrorists as one of the many factions of fascist #FluTruxKlan   https://t.co/kENaivtvzp  #OttawaPoliceFailed   #Cdnpoli #OttawaOccupation #bcpoli https://t.co/aNPGPB7UUm https://t.co/eADsKhT8tP
+    tweet 4:  Look at all the illegal #MurderMags seized from #FluTruxKlan #Terrorists by RCMP at #Coutts #Alberta where Jason Kenney &amp; his #UCP enabled the occupation  No one needs 20-30 round mags to hunt deer, only for killing humans.  #Terrorism   #Diagalon #ableg #Cdnpoli https://t.co/0pXMvcUECB
+    tweet 5:  Sources say #Ottawa police chief Sloly allegedly has come into conflict with members of the OPP and RCMP tasked with assisting the city's law enforcement efforts during the crisis.  https://t.co/AjxgK91UW9 #FluTruxKlan
+    tweet 6:  #Coutts blockade was well supported funded both by locals &amp; wealthy farmers, ranchers &amp; trucking &amp; construction-co owners from across Alberta who participating in a “proxy protest” by giving farm equipment, trucks &amp; heavy equipment #flutruxklan #cdnpoli https://t.co/g0AvGFm5fJ
+    tweet 7:  RT @MakesKelly: Not my meme, but it's brilliant. #Ottawa #FluTruxKlan #OttawaOccupation #TruckersConvoy #Canada https://t.co/qKTGf52VXB
+    tweet 8:  @acoyne Only 113 commercial trucks came into Thunder Bay OPP showed.  There are 420,000 commercial trucks in Canada.  That's 0.0002% of all commercial trucks in the #DiseaseSpreaders far right #FluTruxKlan   Wish media focused on that percentage in every report &amp; gave them less oxygen
+    tweet 9:  RT @patdubois: Fox News reporters just arrived in Ottawa.  So if you wanted the final piece of evidence that the #FluTruxKlan is nothing mo…
+    tweet 10:  Washington got attacked on #January6th, Trump Terrorist attack by Republican fascists to steal the election.  But at least Washington didn't let terrorists set up an ILLEGAL base Camp this big nearby like #Complicit Ottawa police chief did  #FireSloly   #Flutruxklan #cdnpoli https://t.co/Dj1hZFD2Gz
+    tweet 11:  RT @Gonzothefacey: They’re excited the Buffalo bridge is blocked … so they can screw over …. Truckers #Windsor #FluTruxKlan #GoHomeConvoy h…
+    tweet 12:  Finally #cpc MPs pal, far right #Terrorist leader of #FluTruxKlan Pat King is experiencing what rarely happens to the far right in Appeasement Canada.  Consequences.  Great. More of that they are an existential threat to democracy and freedom here, like in US &amp; elsewhere #cdnpoli https://t.co/2ECuiz7MNR
+    tweet 13:  @derrickokeefe @caj So was @GitxsanJt arrested by #VPD for reporting while #Indigenous?   Like the US, arrested for driving while Black, walking while Black, sitting in your backyard while Black, etc etc   Or by VPD as a favour to #RCMP for his reporting?  #Vanpoli #FluTruxKlan
+    tweet 14:  Far right #AntiVaxxers organizers raised $9,559,150 of their $10,000,000 goal.  Yet they keep begging for cash on their livestreams.  But when #FluTruxKlan truckers bring up where is the money on Zello?  They answer truthfully?  Kidding. Mute them  Grifters gonna grift  #cdnpoli https://t.co/NKztP1oZpS
+    tweet 15:  Appeasing fascist #SovereignCitizen #Qanon #terrorists who demand their followers murder doctors and nurses who give kids vaccines like #FluTruxKlan self-declared Queen of Canada is wrong #cdnpoli https://t.co/nwFqv9yZR0 https://t.co/GiUzRTCVka
+    tweet 16:  Do you have the freedom to speed?  No you don’t, our freedoms are limited to protect people Wally Oppal on #CBC   True. You don't have the #FreedomToInfect your neighbours.  #cdnpoli #Flutruxklan #ottawa #bcpoli #ableg #onpoli
+    tweet 17:  @StephanieCarvin Actual consequences for #FluTruxKlan and deterrence for some of the others who might support the far right terrorists.   Appeasing them and name calling them hasn't accomplished anything. Long overdue they acted.
+    tweet 18:  RT @macg1llivray: lol, this one even says "burner" right in the username.   This kind of opposition demonstrates that these techniques thre…
+    tweet 19:  Policing for whom?  If your politics align with police like mainly White #FreedomToInfect far right #FluTruxKlan?  You get two years of concierge policing &amp; appeasement.  If they don’t like left wing environmentalists, White, #Indigenous &amp; POC?  You get beatings &amp; Jail #cdnpoli https://t.co/g4CLMwwcuA https://t.co/PSFXiI2FbI
+    tweet 20:  The #FluTruxKlan is organized by an exec member of a traitorous separatist party the maverick party, right?   Will they thank donors for supplying all their contact data?   Wonder what they might do with that data eh?   #TruckerConvoy2022 #cdnpoli https://t.co/9LXgMX6DRL
+    tweet 21:  RT @TheGentYYC: This is terrorism and attempted mass murder. That's it, that's all, pass the beer nuts /27 #FluTruxKlan #cdnpoli https://t.…
+    tweet 22:  “But for the Americans  it’s totally irrelevant  They don’t care about who the leader of the Conservative Party of Canada is,” he said  “They just like the idea of a bunch of white truckers being in a national capital and fucking shit up.”  #ForeignFunded #FluTruxKlan #cdnpoli https://t.co/KANTYwZWYB
+    tweet 23:  @JohnHaleCrimLaw @davidandrews808 @IRPlawyer Thanks so it might take years until all the trials are done.   These #FluTruxKlan libertarians  demanding that they should have the #FreedomToInfect might finally be introduced to consequences to their actions
+    tweet 24:  RT @realABswim_tri: @PierrePoilievre Just sayin #FluTruxKlan https://t.co/TItE0X0YBR
+    tweet 25:  Public Safety Minister Marco Mendicino said Ottawa's officers will be backed up by other police and national security forces, who are preparing to deal with any threats that could erupt from extremists who have latched on #flutruxklan https://t.co/W3djjrgZsR
+    tweet 26:  Lazar studies apocalyptic politics and states of emergency, and told Global News that there remain questions about whether all of the powers available under provincial emergency laws have been used.  https://t.co/1His6lfFXD #EmergenciesAct #cdnpoli #Onpoli #FluTruxKlan
+    tweet 27:  Since the protest and subsequent occupation of downtown Ottawa began, at least three incident response commanders have been reassigned after working with Sloly  https://t.co/AjxgK91UW9 #FluTruxKlan
+    tweet 28:  Hope reporters ask conservative MP's if they will condemn their #Terrorist pals far right #Antivaxxers in the #FluTruxklan terrorizing paramedics in an ambulance with throwing rocks at them and verbal abuse  #Terrorism   #cdnpoli #Journalism https://t.co/P2AVaF8XG2
+    tweet 29:  “You not doing here telling JT to fuck off, where the fuck you at!”  “I’m sitting in the cab of my truck, ready to do my job, fully ready to present my proof of vaccination at the border, I’m staying away from you and the Plague Rat Express"  https://t.co/x53AunKlSJ #FluTruxKlan
+    tweet 30:  Yes Police need to be willing to act against far right antivaxxers terrorists. In case of Ottawa they need more numbers too, they're too outnumbered b/c Doug Ford loves far right terrorists like #FluTruxKlan and is selling out Ont &amp; Canada to sabotage Trudeau for #cpc #onpoli https://t.co/GeaIlUys7U https://t.co/Q1Jf3CWhyZ
+    tweet 31:  Few of the doctors joining this ( #antivaxxers) movement have any expertise in virology or immunology.   One of the most prominent, Dr. Byram Bridle, teaches at the Ontario Veterinary College.  https://t.co/W2OF4IvqgP #FluTrucksKlan
+    tweet 32:  Canadians joining far right #AntiVaxxers #FluTruxKlan  never learned from American far right how much those organizers and streamers are grifters.  As you can hear on this zello call.#cdnpoli https://t.co/5kpLRsguD9
+    tweet 33:  Far right #Antivaxxer #DiseaseSpreaders #Terrorist calls in a bomb threat at Surrey Memorial hospital  other far right #antivaxxers #Terrorists #FluTruxKlan move into Vancouver to terrorize us  Time for our far right appeasing police &amp; govt to start fighting the far right #bcpoli https://t.co/bnWttJceYU
+    tweet 34:  90% of truckers are vaccinated.   Why are you supporting far right #Antivaxxers #DiseaseSpreaders truckers only 10%?  Worried about losing #DiseaseSpreaders to #PPC?  #OPP showed only 113 commercial trucks in ThunderBay  420,000 commercial trucks in Canada  #FluTruxKlan =0.0002% https://t.co/5zJ35BYFAD https://t.co/cw4oJ7q8aA
+    tweet 35:  #FollowTheMoney  Canadian donors make up 6 of the top ten #GiveSendGo far right #FluTruxKlan donors; Americans make up 3, with the top donation — US$215,000 — listed as “processed but not recorded.”   #Terrorism #cdnpoli #Fintrac https://t.co/qMQpce7DGI
+    tweet 36:  Will #FluTruxKlan #Terrorists Do that here?  @One of the deadliest domestic terrorism attacks in the US – the Oklahoma City bombing — was carried out by a well-known s’#SovereignCitizen, Terry Nichols, an accomplice of Timothy McVeigh.  @DrSarteschi   https://t.co/KFSQgpcJdp https://t.co/nAUXRYM6qQ
+    tweet 37:  RT @AndrewLewisFC: If @CPC_HQ &amp; @erinotoole &amp; @PierrePoilievre hadn’t assured me that the Ottawa #freedomconvoy isn’t organized and driven…
+    tweet 38:  RT @JeffreyLuscombe: Canadians kicked Nazi ass on Juno Beach on D-Day. We are not going to cower to a few new alt-right anti-government occ…
+    tweet 39:  @glen_mcgregor And b/c no state or major corporate media outlet has dedicated reporter on far right?  So many claimed extremists were "attached" to the #TruckersConvoy2022   vs fact that the main #FluTruxKlan organizers ARE FR extremists.  So they pushed that false narrative minimizing convoy https://t.co/4j9YBzxAad
+    tweet 40:  If you're an NDP, LPC or Greens MP or activist &amp; you're not sharing this meme of #PierrePoilievre   "Conservative backed border blockades now cost Canadians $750,000"  You're committing political malpractice  #FightForDemocracy eh?  #cdnpoli #bcpoli #onpoli #FlutruxKlan #Ottawa https://t.co/xKvN8249vC https://t.co/RuK0VZZ3aL
+    tweet 41:  Hope people in Ontario call their MPP's &amp; say, politely, 100 #OPP is not enough  Demand Complict Doug Ford stop enabling  far right terrorists #FluTruxKlan, demanding to overthrow our elected govt  Send enough OPP &amp; others to flood #Ottawa w/ cops, arrest &amp; seize trucks https://t.co/ukqeaG0F3m https://t.co/opR8IGW4ol
+    tweet 42:  Who is funding the racist fascist #terrorists in the #flutruxklan?  MacGregor told the committee that he wants to ensure that the company #gofundme prevents the use of anonymity to funnel money to extremist groups.  #ottawaoccupation # cdnpoli  https://t.co/KjNQ03Z4OC
+    tweet 43:  @mssinenomine True. And CBC radio said Toronto police rerouted #FluTruxKlan away from Hospitals.   VPD refused to protect #StPaulsHospital against the #Terrorists. Why?   Hope reporters ask about that #bcpoli
+    tweet 44:  #FluTruxKlan main organizer Pat King committed #StolenValour   Lied about being in military  Lied about being in Afghanistan, and in combat  Lied about losing his leg in combat in Afghanistan jumping on an IED!  AND GRIFTED Fundraising for it!  https://t.co/88lBokAiKu #cdnpoli https://t.co/FkbdpEj0mL https://t.co/Ji2jvsB4Mc
+    tweet 45:  @ElizabethRBess Absolutely. And #cpc MP's don't think that or the threat to overthrow govt are obstacle to endorsing the far right #FluTruxKlan   They are the #terroristCaucus now https://t.co/mKQcTT2PhK
+    tweet 46:  If you need a good laugh during these trying times.   Why is it so easy to grift the #AntiDemocracy far right #FreedomToInfect #FluTruxKlan Crowd?   @waltermasterson shows you  #Ottawa https://t.co/N0W38VfxK4
+    tweet 47:  RT @TheGentYYC: So those same "Conservatives" that lied to us about grocery shelves from day one then openly praised the #FluTruxKlan &amp; con…
+    tweet 48:  @robertpaddon @canteach @home_hardware So moronic of #HomeHardware  Their loose ownership structure that arguably was a competitive advantage is now a competitive threat  Some Cdns are in favour of fascist racist terrorism &amp; killing their neighbours or giving them #LongCovid &amp; killing democracy  Not all #FluTruxKlan https://t.co/0Oqd7EO5lc
+    tweet 49:  RT @Aaron8Terry: @OttawaPolice where are the Noise and Parking infractions 👇🏽?  Law abiding citizens pay the price for your cowardice in fa…
+    tweet 50:  “There are no white supremacists at this rally, right?  I need to know what a White supremacist looks like" #FluTruxKlan   “Here! Right here!” Woman in crowd   “Are you a White supremacist sir?”   Man says “Yes, I am a White supremacist!” gets some cheers, gives a nazi salute https://t.co/wTAVn17rjA

@@ -26,7 +26,7 @@ def main():
     io.info('Computing vocab...')
     for doc in docs:
         for token in doc:
-            if not (token.is_stop or token.is_punct or token.is_space or token.like_url or token.like_num or len(token.text)<=2):
+            if token.text.isalpha() and  not (token.is_stop or len(token.text)<=2):
                 freq[token.text.lower()]+=1
 
 

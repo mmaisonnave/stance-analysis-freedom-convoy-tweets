@@ -19,9 +19,10 @@ paths:
   output_log: 'log/output.log'
   vocab-filename: 'data/generated/vocab.txt'
   prompt-folder: 'data/generated/prompts'
+  example-user-timelines: 'data/generated/usersTimelines/example_user_timelines.txt'
 
 variables:
-  vocab-threshold: 100
+  vocab-threshold: 50
 
 prompts: 
   improved-prompt: >

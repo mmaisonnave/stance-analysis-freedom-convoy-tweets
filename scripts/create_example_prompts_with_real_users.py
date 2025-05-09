@@ -58,16 +58,16 @@ def main():
     freq_repr = [f'<{id_}: {count}>' for id_, count in freq.items()]
     io.info(f'freq= [{freq_repr[0]}, {freq_repr[1]},..., {freq_repr[-1]} ]')
 
-    users_with_more_100_tweets = [id_ for id_,count in freq.items() if count>=100]
+    users_with_more_30_tweets = [id_ for id_,count in freq.items() if count>=30]
 
-    io.info(f'len(users_with_more_100_tweets)={len(users_with_more_100_tweets)}')
+    io.info(f'len(users_with_more_100_tweets)={len(users_with_more_30_tweets)}')
 
 
 
     # ========== Randomly sampling from the relevant users with 100+ tweets authored ==========
     rng = np.random.default_rng(seed=SEED)
 
-    selected_users = rng.choice(users_with_more_100_tweets,
+    selected_users = rng.choice(users_with_more_30_tweets,
                                 size=USER_SAMPLE_SIZE,
                                 replace=False
                                 )

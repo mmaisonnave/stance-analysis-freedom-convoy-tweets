@@ -53,12 +53,23 @@ class PathsHandler:
         else:
             return os.path.join(self._config['paths']['repository_path'], self._config['paths'][path_key])
 
+    def get_api_key(self, which='personal_key'):
+        if which == 'personal_key':
+            path = self.get_path('personal-openai-api-key')
+        elif which == 'project_key':
+            path = self.get_path('project-openai-api-key')
+        else:
+            raise ValueError('Invalid type of api key detected')
+        
+        with open(path, 'r', encoding='utf-8') as reader:
+            return reader.read()
+
     def get_variable(self, path_key):
         return self._config['variables'][path_key]
 
     def get_prompt(self, prompt_name:str) -> str:
-        prompt_folder = self.get_path('prompt-folder')
-        prompt_filename = os.path.join(prompt_folder, f'{prompt_name}.txt')
+        prompt_folder = self.get_path('prompts-folder')
+        prompt_filename = os.path.join(prompt_folder, f'{prompt_name}.md')
         with open(prompt_filename, 'r', encoding='utf-8') as reader:
             return reader.read()
 

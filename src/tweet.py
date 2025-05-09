@@ -23,10 +23,12 @@ Attributes:
 """
 
 from datetime import datetime
+import html
+
 import pandas as pd
 import string
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Self
 from dataclasses import dataclass
 from typing import Type
 
@@ -89,7 +91,7 @@ class Tweet:
             datetime.strptime(dictionary['created_at'], "%Y-%m-%dT%H:%M:%S.%fZ"),
             str(dictionary['id']),
             str(dictionary['conversation_id']),
-            dictionary['text'],
+            html.unescape(dictionary['text']),
             dictionary['possibly_sensitive']
         )
 
@@ -169,22 +171,19 @@ class Tweet:
         return is_reply
 
     @property
-    def sanitized_text(self,):
+    def sanitized_text(self):
         """
         Return the tweet text without hashtags, mentions, URLs, and punctuation.
         """
         text = self.text.lstrip('RT ')  # Remove 'RT ' if it exists
         
         # Remove hashtags, mentions, and URLs efficiently
-        for item in self.hashtags + self.mentions:
-            text = text.replace(f'#{item}', '').replace(f'@{item}', '')
+        for item in self.mentions:
+            text = text.replace(f'@{item}', r'@AnonymizedUser')
         for url in self.urls:
-            text = text.replace(url, '')
+            text = text.replace(url, r'[AnonymizedURL]')
 
-        # Remove punctuation efficiently using str.translate
-        text = text.translate(str.maketrans('', '', string.punctuation)).strip()
-        
-        return text
+        return ' '.join(text.split()).replace('\n',' ')
 
     def __str__(self):
         """
@@ -197,3 +196,18 @@ class Tweet:
         Return a formal string representation of the Tweet object showing only author_id, id, and text.
         """
         return f"Tweet(author_id={self.author_id}, id={self.id}, text={self.text.replace('\n','\\n')}, date={self.created_at})"
+
+    @staticmethod
+    def filter_tweets_by_date(tweets: List[Self], start:datetime , end: datetime):
+        """
+        Filters a list of tweets to include only those created within a specified date range.
+        Args:
+            tweets (List[Self]): A list of tweet objects to filter.
+            start (datetime): The start of the date range (inclusive).
+            end (datetime): The end of the date range (inclusive).
+        Returns:
+            List[Self]: A list of tweet objects that fall within the specified date range.
+        """
+        
+        return [tweet for tweet in tweets if start <= tweet.created_at <= end]
+

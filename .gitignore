@@ -176,3 +176,5 @@ data/*
 **/.DS_Store
 notebooks/*
 .vscode/
+config/personal_openai_api_key.txt
+config/project_openai_api_key.txt

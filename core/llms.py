@@ -1,3 +1,4 @@
+import json
 import sys
 import numpy as np
 sys.path.append('..')
@@ -137,7 +138,8 @@ class OpenAIStanceDetector:
         )
         io.info(f'response:             {response}')
         io.info(f'response.output_text: {response}')
-        return response.output_text
+        return json.loads(response.output_text)
+
 
     def evaluate_tweet(self, tweet: Tweet) -> str:
         developer_content = self.config.get_prompt(self.stance_detector_config['tweet-eval-developer-prompt-name'])

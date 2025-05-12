@@ -1,3 +1,4 @@
+# from enum import Enum
 import json
 import sys
 import numpy as np
@@ -12,6 +13,11 @@ from typing import List
 from src.tweet import Tweet
 from openai import OpenAI
 
+
+# class TweetPoliticalAlignment(Enum):
+#     NEUTRAL = "neutral"
+#     LEFT = "left-wing"
+#     RIGHT = "right-wing"
 
 class StanceDetector:
 
@@ -150,7 +156,7 @@ class OpenAIStanceDetector:
         return full_response
 
 
-    def evaluate_tweet(self, tweet: Tweet) -> str:
+    def evaluate_tweet(self, tweet: Tweet) -> dict:
         developer_content = self.config.get_prompt(self.stance_detector_config['tweet-eval-developer-prompt-name'])
         user_content = OpenAIStanceDetector.format_evaluate_tweet_prompt(tweet)
         assert len(developer_content) + len(user_content) < 5000 + 280
@@ -160,7 +166,7 @@ class OpenAIStanceDetector:
         for line in user_content.splitlines():
             io.info(line)
 
-        response = self.client.responses.create(
+        llm_response = self.client.responses.create(
             model=self.stance_detector_config['model-name'],
             input=[
                 {
@@ -174,7 +180,26 @@ class OpenAIStanceDetector:
             ]
         )
 
-        io.info(f'Response:             {response}')
-        io.info(f'Response.output_text: {response.output_text}')
+        io.info(f'Response:             {llm_response}')
+        io.info(f'Response.output_text: {llm_response.output_text}')
 
-        return response.output_text
+        llm_response = llm_response.output_text.replace('Assistant Response: ', '')
+
+        
+        if 'right' in llm_response.lower():
+            normalized_llm_response = 'right'
+        elif 'left' in llm_response.lower():
+            normalized_llm_response = 'left'
+        elif 'neutral' in llm_response.lower():
+            normalized_llm_response = 'neutral'
+        else:
+            raise ValueError('Got wrong response from LLM. Problem with prompt?')
+
+        full_response = {
+            'llm_response': normalized_llm_response,
+            'tweet_id': tweet.id,
+            'author_id': tweet.author_id,
+        }
+
+
+        return full_response

@@ -23,9 +23,11 @@ paths:
   project-openai-api-key: 'config/project_openai_api_key.txt'
   prompts-folder: 'config/prompts/'
   user-evaluation-output: 'data/generated/users_evaluation_using_openai.json'
+  tweet-evaluation-output: 'data/generated/tweets_evaluation_using_openai.json'
 
 variables:
   vocab-threshold: 50
+
 
   openai-tweet-stance-detector-configuration:
     model-name: 'gpt-4.1-nano'

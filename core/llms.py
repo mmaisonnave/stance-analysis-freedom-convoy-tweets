@@ -102,6 +102,7 @@ class OpenAIStanceDetector:
 
 
     def evaluate_user(self, tweets: List[Tweet]) -> str:
+        assert len(tweets)>0, 'Trying to evaluate a user with no tweets.'
         assert len({tweet.author_id for tweet in tweets})==1, 'Trying to evaluate tweets of multiple users at the same time.'
 
         io.info(f'Randomly choosing {self.max_tweet_count} tweets out of {len(tweets)}')
@@ -123,7 +124,7 @@ class OpenAIStanceDetector:
 
         assert len(developer_content) + len(user_content) < 5000 + self.max_tweet_count*280, 'Call to API with suspiciously big payload.'
 
-        response = self.client.responses.create(
+        llm_response = self.client.responses.create(
             model=self.stance_detector_config['model-name'],
             input=[
                 {
@@ -132,13 +133,21 @@ class OpenAIStanceDetector:
                 },
                 {
                     "role": "user",
-                    "content": developer_content
+                    "content": user_content
                 }
             ]
         )
-        io.info(f'response:             {response}')
-        io.info(f'response.output_text: {response}')
-        return json.loads(response.output_text)
+        io.info(f'response:             {llm_response}')
+        io.info(f'response.output_text: {llm_response}')
+
+        full_response = {
+            'llm_response': json.loads(llm_response.output_text),
+            'author_id': tweets[0].author_id,
+            'formatted_user_input': user_content,
+            'tweet_ids': [tweet.id for tweet in selected_tweets]
+        }        
+
+        return full_response
 
 
     def evaluate_tweet(self, tweet: Tweet) -> str:

@@ -32,7 +32,7 @@ variables:
     openai-key: 'personal_key'
     user-eval-developer-prompt-name: 'openai-evaluate-user-developer-prompt'
     tweet-eval-developer-prompt-name: 'openai-evaluate-tweet-developer-prompt'
-    user-timeline-max-tweet-count: 30
+    user-timeline-max-tweet-count: 50
     seed: 4056901968
 
 

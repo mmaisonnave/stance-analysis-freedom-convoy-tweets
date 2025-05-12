@@ -1,3 +1,5 @@
+import argparse
+
 import json
 import os
 import sys
@@ -11,19 +13,28 @@ from src.tweet import Tweet
 from collections import Counter
 from core.llms import OpenAIStanceDetector
 
-def main():
-    io.info('Starting script evaluate_stance_users.py ...')
+
+
+def clean():
+    # Add your logic to remove files here
+    io.info("Cleaning up files...")
+    config = PathsHandler()
+    OUTPUT_FILE = config.get_path('user-evaluation-output')
+    os.remove(OUTPUT_FILE)
+
+
+def run_main():
     config = PathsHandler()
 
     OUTPUT_FILE = config.get_path('user-evaluation-output')
     io.info(f'Script will store results in {OUTPUT_FILE}')
 
 
-    # ========== Retrieve all tweets: ========== 
+    # ========== Retrieve all tweets: ==========
     _, tweets, _ = ConvoyProtestDataset.get_dataset(data_type=DatasetType.MENTIONERS, removed_repeated=True)
     io.info(f'Len unique tweets:                         {len(tweets):,}')
 
-    # ========== Filter by date: ========== 
+    # ========== Filter by date: ==========
     start = datetime(2022, 1, 1)
     end = datetime(2022, 3, 31)
     tweets = Tweet.filter_tweets_by_date(tweets, start=start, end=end)
@@ -43,7 +54,7 @@ def main():
 
 
     author_ids = {author_id for author_id, count in
-                  Counter([tweet.author_id for tweet in tweets ]).items() 
+                  Counter([tweet.author_id for tweet in tweets ]).items()
                   if count>=detector.max_tweet_count}
 
     io.info(f'Number of users with more than {detector.max_tweet_count} tweets = {len(author_ids)}.')
@@ -58,21 +69,34 @@ def main():
     
     io.info(f'elements to process:         {len(author_ids)}')
     io.info(f'already processed elements:  {len(already_proccessed_ids)}')
-    author_ids = author_ids.difference(already_proccessed_ids)
+    author_ids = list(author_ids.difference(already_proccessed_ids))
     io.info(f'Elements left to process:    {len(author_ids)}')
 
-    for author_id in author_ids:
+    for author_id in author_ids[:3]:
         tweets_from_user = [tweet for tweet in tweets if tweet.author_id==author_id]
         result = detector.evaluate_user(tweets_from_user)
-        result['author_id'] = author_id
+        assert result['author_id'] == author_id
         results.append(result)
 
     
     with open(OUTPUT_FILE, "w", encoding='utf-8') as f:
         json.dump(results, f, indent=4)
 
-    io.info('Finishing script evaluate_stance_users.py ...')
+    io.info('Results saved to disk.')
 
+
+def main():
+    io.info('Starting script evaluate_stance_users.py ...')
+    parser = argparse.ArgumentParser(description="A script with a --clean option.")
+    parser.add_argument("--clean", action="store_true", help="Clean up files instead of running main logic.")
+    args = parser.parse_args()
+
+    if args.clean:
+        clean()
+    else:
+        run_main()
+    
+    io.info('Finishing script evaluate_stance_users.py ...')
 
 
 if __name__ == '__main__':

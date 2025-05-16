@@ -51,9 +51,6 @@ def run_main():
     io.info(f'Tweet count with tweets with urls removed: {len(tweets):,}')
 
 
-    char_count = sum([len(tweet.sanitized_text) for tweet in tweets])
-    io.info(f'char_count={char_count} (to process with LLM)')
-
 
     detector = OpenAIStanceDetector()
 
@@ -63,11 +60,11 @@ def run_main():
         with open(output_file, 'r', encoding='utf-8') as file:
             results = json.load(file)
 
-    already_proccessed_tweet_ids = {result_item['tweet_id'] for result_item in results}
-    io.info(f'already processed elements:  {len(already_proccessed_tweet_ids)}')
+    already_processed_tweet_ids = {result_item['tweet_id'] for result_item in results}
+    io.info(f'already processed elements:  {len(already_processed_tweet_ids)}')
 
 
-    tweets = [tweet for tweet in tweets if tweet.id not in already_proccessed_tweet_ids]
+    tweets = [tweet for tweet in tweets if tweet.id not in already_processed_tweet_ids]
     io.info(f'Elements left to process:    {len(tweets)}')
 
 
@@ -75,13 +72,21 @@ def run_main():
 
     rng.shuffle(tweets)
 
-    for tweet in tweets[:20000]:
-        result = detector.evaluate_tweet(tweet)
-        results.append(result)
+    BATCH_SIZE = 30
+    SAMPLE_SIZE= 100
 
-    
-    with open(output_file, "w", encoding='utf-8') as f:
-        json.dump(results, f, indent=4)
+    SAMPLE_SIZE=min(SAMPLE_SIZE, len(tweets))
+
+    for i in range(0, SAMPLE_SIZE, BATCH_SIZE):
+        batch = tweets[i:min(i+BATCH_SIZE, SAMPLE_SIZE)]
+        print(f'len(batch)={len(batch)}       ({i} - {min(i+BATCH_SIZE, SAMPLE_SIZE)})')
+        for tweet in batch:
+            result = detector.evaluate_tweet(tweet)
+            results.append(result)
+
+        # Save results after each batch
+        with open(output_file, "w", encoding='utf-8') as f:
+            json.dump(results, f, indent=4)
 
     io.info('Results saved to disk.')
 

@@ -111,7 +111,7 @@ class OpenAIStanceDetector:
         assert len(tweets)>0, 'Trying to evaluate a user with no tweets.'
         assert len({tweet.author_id for tweet in tweets})==1, 'Trying to evaluate tweets of multiple users at the same time.'
 
-        io.info(f'Randomly choosing {self.max_tweet_count} tweets out of {len(tweets)}')
+        # io.info(f'Randomly choosing {self.max_tweet_count} tweets out of {len(tweets)}')
         selected_tweets = self.rng.choice(
             a=tweets,
             size=self.max_tweet_count,
@@ -124,9 +124,9 @@ class OpenAIStanceDetector:
         # Formatting up user input
         user_content = OpenAIStanceDetector.format_evaluate_user_prompt(selected_tweets)
 
-        io.info('User input formatted:')
-        for line in user_content.splitlines():
-            io.info(line)
+        # io.info('User input formatted:')
+        # for line in user_content.splitlines():
+        #     io.info(line)
 
         assert len(developer_content) + len(user_content) < 5000 + self.max_tweet_count*280, 'Call to API with suspiciously big payload.'
 
@@ -143,8 +143,8 @@ class OpenAIStanceDetector:
                 }
             ]
         )
-        io.info(f'response:             {llm_response}')
-        io.info(f'response.output_text: {llm_response}')
+        # io.info(f'response:             {llm_response}')
+        # io.info(f'response.output_text: {llm_response}')
 
         full_response = {
             'llm_response': json.loads(llm_response.output_text),
@@ -162,9 +162,9 @@ class OpenAIStanceDetector:
         assert len(developer_content) + len(user_content) < 5000 + 280
 
 
-        io.info('Evaluating single tweet, calling API. With input:')
-        for line in user_content.splitlines():
-            io.info(line)
+        # io.info('Evaluating single tweet, calling API. With input:')
+        # for line in user_content.splitlines():
+        #     io.info(line)
 
         llm_response = self.client.responses.create(
             model=self.stance_detector_config['model-name'],
@@ -180,8 +180,8 @@ class OpenAIStanceDetector:
             ]
         )
 
-        io.info(f'Response:             {llm_response}')
-        io.info(f'Response.output_text: {llm_response.output_text}')
+        # io.info(f'Response:             {llm_response}')
+        # io.info(f'Response.output_text: {llm_response.output_text}')
 
         llm_response = llm_response.output_text.replace('Assistant Response: ', '')
 

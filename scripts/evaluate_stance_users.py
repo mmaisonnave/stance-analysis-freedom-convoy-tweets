@@ -1,5 +1,5 @@
 import argparse
-
+import numpy as np
 import json
 import os
 import sys
@@ -14,24 +14,24 @@ from collections import Counter
 from core.llms import OpenAIStanceDetector
 
 
+def clean(output_file: str):
+    # Ask for confirmation before removing the file
+    confirmation = input(f"Are you sure you want to delete '{output_file}'? [y/N]: ").strip().lower()
+    if confirmation == 'y':
+        io.info("Cleaning up files...")
+        os.remove(output_file)
+        io.info(f"'{output_file}' has been deleted.")
+    else:
+        io.info("Cleanup aborted by user.")
 
-def clean():
-    # Add your logic to remove files here
-    io.info("Cleaning up files...")
-    config = PathsHandler()
-    OUTPUT_FILE = config.get_path('user-evaluation-output')
-    os.remove(OUTPUT_FILE)
 
 
-def run_main():
-    config = PathsHandler()
-
-    OUTPUT_FILE = config.get_path('user-evaluation-output')
-    io.info(f'Script will store results in {OUTPUT_FILE}')
-
+def run_main(output_file: str):
+    SAMPLE_SIZE = 100
+    SEED=2916376554
 
     # ========== Retrieve all tweets: ==========
-    _, tweets, _ = ConvoyProtestDataset.get_dataset(data_type=DatasetType.MENTIONERS, removed_repeated=True)
+    _, tweets, _ = ConvoyProtestDataset.get_dataset(data_type=DatasetType.ALL, removed_repeated=True)
     io.info(f'Len unique tweets:                         {len(tweets):,}')
 
     # ========== Filter by date: ==========
@@ -61,8 +61,8 @@ def run_main():
 
     results = []
 
-    if os.path.exists(OUTPUT_FILE):
-        with open(OUTPUT_FILE, 'r', encoding='utf-8') as file:
+    if os.path.exists(output_file):
+        with open(output_file, 'r', encoding='utf-8') as file:
             results = json.load(file)
 
     already_proccessed_ids = {result_item['author_id'] for result_item in results}
@@ -72,29 +72,60 @@ def run_main():
     author_ids = list(author_ids.difference(already_proccessed_ids))
     io.info(f'Elements left to process:    {len(author_ids)}')
 
-    for author_id in author_ids[:3]:
+
+    rng = np.random.default_rng(seed=SEED)
+
+    rng.shuffle(author_ids)
+
+    SAMPLE_SIZE=min(SAMPLE_SIZE, len(author_ids))
+    for author_id in author_ids[:SAMPLE_SIZE]:
         tweets_from_user = [tweet for tweet in tweets if tweet.author_id==author_id]
         result = detector.evaluate_user(tweets_from_user)
         assert result['author_id'] == author_id
         results.append(result)
 
-    
-    with open(OUTPUT_FILE, "w", encoding='utf-8') as f:
+    io.info(f'Finished processing users, computed {len(results)} results.')
+    with open(output_file, "w", encoding='utf-8') as f:
         json.dump(results, f, indent=4)
 
     io.info('Results saved to disk.')
 
+def count(output_file: str) -> None:
+    counter = {}
+    length = 0
+    if os.path.exists(output_file):
 
+        with open(output_file, 'r', encoding='utf-8') as file:
+            results = json.load(file)
+
+        counter = Counter([result['llm_response']['score'] for result in results])
+        length = len(results)
+    io.info(f'Count of results: {length}')
+    io.info(f'Count of results: {counter}')
+        
 def main():
+    config = PathsHandler()
+
+    output_file = config.get_path('user-evaluation-output')
+    io.info(f'Script will store results in {output_file}')
+
     io.info('Starting script evaluate_stance_users.py ...')
     parser = argparse.ArgumentParser(description="A script with a --clean option.")
+
     parser.add_argument("--clean", action="store_true", help="Clean up files instead of running main logic.")
+    parser.add_argument("--count", action="store_true", help="Count how many response we have stored in the output file.")
+    parser.add_argument("--compute", action="store_true", help="Compute the stance of the tweets.")
+
     args = parser.parse_args()
 
     if args.clean:
-        clean()
+        clean(output_file)
+    elif args.compute:
+        run_main(output_file)
+    elif args.count:
+        count(output_file)
     else:
-        run_main()
+        raise ValueError("Invalid argument. Use --clean, --count, or --compute.")
     
     io.info('Finishing script evaluate_stance_users.py ...')
 

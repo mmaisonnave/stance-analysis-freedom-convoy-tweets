@@ -30,7 +30,7 @@ variables:
 
 
   openai-tweet-stance-detector-configuration:
-    model-name: 'gpt-4.1-nano'
+    model-name: 'gpt-4.1-nano-2025-04-14'
     openai-key: 'personal_key'
     user-eval-developer-prompt-name: 'openai-evaluate-user-developer-prompt'
     tweet-eval-developer-prompt-name: 'openai-evaluate-tweet-developer-prompt'

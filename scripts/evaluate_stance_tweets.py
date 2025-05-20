@@ -15,19 +15,24 @@ from core.llms import OpenAIStanceDetector
 
 
 
-def clean():
-    # Add your logic to remove files here
-    io.info("Cleaning up files...")
-    config = PathsHandler()
-    output_file = config.get_path('tweet-evaluation-output')
-    os.remove(output_file)
+def clean(output_file: str):
+    # Ask for confirmation before removing the file
+    confirmation = input(f"Are you sure you want to delete '{output_file}'? [y/N]: ").strip().lower()
+    if confirmation == 'y':
+        io.info("Cleaning up files...")
+        os.remove(output_file)
+        io.info(f"'{output_file}' has been deleted.")
+    else:
+        io.info("Cleanup aborted by user.")
 
 
-def run_main():
+
+def run_main(output_file: str):
+    BATCH_SIZE = 100
+    SAMPLE_SIZE= 3000
+
+
     SEED = 172027145
-    config = PathsHandler()
-
-    output_file = config.get_path('tweet-evaluation-output')
     io.info(f'Script will store results in {output_file}')
 
 
@@ -72,14 +77,11 @@ def run_main():
 
     rng.shuffle(tweets)
 
-    BATCH_SIZE = 30
-    SAMPLE_SIZE= 100
 
     SAMPLE_SIZE=min(SAMPLE_SIZE, len(tweets))
-
     for i in range(0, SAMPLE_SIZE, BATCH_SIZE):
         batch = tweets[i:min(i+BATCH_SIZE, SAMPLE_SIZE)]
-        print(f'len(batch)={len(batch)}       ({i} - {min(i+BATCH_SIZE, SAMPLE_SIZE)})')
+        io.info(f'len(batch)={len(batch)}       ({i} - {min(i+BATCH_SIZE, SAMPLE_SIZE)})')
         for tweet in batch:
             result = detector.evaluate_tweet(tweet)
             results.append(result)
@@ -90,17 +92,43 @@ def run_main():
 
     io.info('Results saved to disk.')
 
+def count(output_file: str) -> None:
+    count_no = 0
+    neutral_count = 0
+    right_count = 0
+    left_count = 0
+    if os.path.exists(output_file):
+
+        with open(output_file, 'r', encoding='utf-8') as file:
+            results = json.load(file)
+        count_no = len(results)
+        right_count = len([result for result in results if result['llm_response'] == 'right'])
+        neutral_count = len([result for result in results if result['llm_response'] == 'neutral'])
+        left_count = len([result for result in results if result['llm_response'] == 'left'])
+    io.info(f'No of results found: {count_no}')
+    io.info(f'No of left found:    {left_count}')
+    io.info(f'No of neutral found: {neutral_count}')
+    io.info(f'No of right found:   {right_count}')
 
 def main():
+    config = PathsHandler()
+    output_file = config.get_path('tweet-evaluation-output')
     io.info('Starting script evaluate_stance_users.py ...')
     parser = argparse.ArgumentParser(description="A script with a --clean option.")
     parser.add_argument("--clean", action="store_true", help="Clean up files instead of running main logic.")
+    parser.add_argument("--count", action="store_true", help="Count how many response we have stored in the output file.")
+    parser.add_argument("--compute", action="store_true", help="Compute the stance of the tweets.")
+
     args = parser.parse_args()
 
     if args.clean:
-        clean()
+        clean(output_file)
+    elif args.count:
+        count(output_file)
+    elif args.compute:
+        run_main(output_file)
     else:
-        run_main()
+        raise ValueError("Please provide --clean, --count, or --compute argument.")
     
     io.info('Finishing script evaluate_stance_users.py ...')
 

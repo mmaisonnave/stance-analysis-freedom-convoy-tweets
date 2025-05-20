@@ -1,5 +1,5 @@
 # from enum import Enum
-import json
+import json5
 import sys
 import numpy as np
 sys.path.append('..')
@@ -128,7 +128,7 @@ class OpenAIStanceDetector:
         # for line in user_content.splitlines():
         #     io.info(line)
 
-        assert len(developer_content) + len(user_content) < 5000 + self.max_tweet_count*280, 'Call to API with suspiciously big payload.'
+        assert len(developer_content) + len(user_content) < 5000 + self.max_tweet_count*500, 'Call to API with suspiciously big payload.'
 
         llm_response = self.client.responses.create(
             model=self.stance_detector_config['model-name'],
@@ -141,13 +141,14 @@ class OpenAIStanceDetector:
                     "role": "user",
                     "content": user_content
                 }
-            ]
+            ],
+            temperature=0
         )
-        # io.info(f'response:             {llm_response}')
-        # io.info(f'response.output_text: {llm_response}')
+
+        
 
         full_response = {
-            'llm_response': json.loads(llm_response.output_text),
+            'llm_response': json5.loads(llm_response.output_text),
             'author_id': tweets[0].author_id,
             'formatted_user_input': user_content,
             'tweet_ids': [tweet.id for tweet in selected_tweets]
@@ -177,7 +178,8 @@ class OpenAIStanceDetector:
                     "role": "user",
                     "content": user_content
                 }
-            ]
+            ],
+            temperature=0 
         )
 
         # io.info(f'Response:             {llm_response}')

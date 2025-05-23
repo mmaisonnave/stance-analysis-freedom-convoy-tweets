@@ -28,9 +28,8 @@ def clean(output_file: str):
 
 
 def run_main(output_file: str):
-    BATCH_SIZE = 100
-    SAMPLE_SIZE= 3000
-
+    BATCH_SIZE = 200
+    SAMPLE_SIZE= 1000
 
     SEED = 172027145
     io.info(f'Script will store results in {output_file}')
@@ -54,7 +53,6 @@ def run_main(output_file: str):
     # ========== Remove tweets with URL: ========== 
     tweets = [tweet for tweet in tweets if len(tweet.urls)==0]
     io.info(f'Tweet count with tweets with urls removed: {len(tweets):,}')
-
 
 
     detector = OpenAIStanceDetector()

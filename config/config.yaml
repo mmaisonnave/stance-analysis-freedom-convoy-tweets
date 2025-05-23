@@ -24,6 +24,9 @@ paths:
   prompts-folder: 'config/prompts/'
   user-evaluation-output: 'data/generated/users_evaluation_using_openai.json'
   tweet-evaluation-output: 'data/generated/tweets_evaluation_using_openai.json'
+  tweet-stance-plot: 'data/generated/plots/tweet_stance_plot.png'
+  user-stance-plot: 'data/generated/plots/user_stance_plot.png'
+
 
 variables:
   vocab-threshold: 50

@@ -26,6 +26,7 @@ paths:
   tweet-evaluation-output: 'data/generated/tweets_evaluation_using_openai.json'
   tweet-stance-plot: 'data/generated/plots/tweet_stance_plot.png'
   user-stance-plot: 'data/generated/plots/user_stance_plot.png'
+  tweet-proportion-stance-plot: 'data/generated/plots/tweet_proportion_stance_plot.png'
 
 
 variables:

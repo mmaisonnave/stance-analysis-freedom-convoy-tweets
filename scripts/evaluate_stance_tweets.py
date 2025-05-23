@@ -27,11 +27,11 @@ def clean(output_file: str):
 
 
 
-def run_main(output_file: str):
+def run_main(output_file: str, sample_size: int) -> None:
     BATCH_SIZE = 200
-    SAMPLE_SIZE= 1000
 
     SEED = 172027145
+    io.info(f'Using sample size: {sample_size}')
     io.info(f'Script will store results in {output_file}')
 
 
@@ -76,10 +76,10 @@ def run_main(output_file: str):
     rng.shuffle(tweets)
 
 
-    SAMPLE_SIZE=min(SAMPLE_SIZE, len(tweets))
-    for i in range(0, SAMPLE_SIZE, BATCH_SIZE):
-        batch = tweets[i:min(i+BATCH_SIZE, SAMPLE_SIZE)]
-        io.info(f'len(batch)={len(batch)}       ({i} - {min(i+BATCH_SIZE, SAMPLE_SIZE)})')
+    sample_size=min(sample_size, len(tweets))
+    for i in range(0, sample_size, BATCH_SIZE):
+        batch = tweets[i:min(i+BATCH_SIZE, sample_size)]
+        io.info(f'len(batch)={len(batch)}       ({i} - {min(i+BATCH_SIZE, sample_size)})')
         for tweet in batch:
             result = detector.evaluate_tweet(tweet)
             results.append(result)
@@ -116,6 +116,7 @@ def main():
     parser.add_argument("--clean", action="store_true", help="Clean up files instead of running main logic.")
     parser.add_argument("--count", action="store_true", help="Count how many response we have stored in the output file.")
     parser.add_argument("--compute", action="store_true", help="Compute the stance of the tweets.")
+    parser.add_argument("--sample-size", type=int, default=1000, help="Number of tweets to sample for computation (used with --compute).")
 
     args = parser.parse_args()
 
@@ -124,7 +125,7 @@ def main():
     elif args.count:
         count(output_file)
     elif args.compute:
-        run_main(output_file)
+        run_main(output_file, sample_size=args.sample_size)
     else:
         raise ValueError("Please provide --clean, --count, or --compute argument.")
     

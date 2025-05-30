@@ -26,15 +26,14 @@ paths:
   tweet-evaluation-output: 'data/generated/tweets_evaluation_using_openai.json'
   tweet-stance-plot: 'data/generated/plots/tweet_stance_plot.png'
   user-stance-plot: 'data/generated/plots/user_stance_plot.png'
-  tweet-proportion-stance-plot: 'data/generated/plots/tweet_proportion_stance_plot.png'
-
+  hashtag-histogram-stance-plot: 'data/generated/plots/hashtag_histogram_stance_plot.png'
 
 variables:
   vocab-threshold: 50
 
   openai-tweet-stance-detector-configuration:
     model-name: 'gpt-4.1-nano-2025-04-14'
-    openai-key: 'personal_key'
+    openai-key: 'project_key'
     user-eval-developer-prompt-name: 'openai-evaluate-user-developer-prompt'
     tweet-eval-developer-prompt-name: 'openai-evaluate-tweet-developer-prompt'
     user-timeline-max-tweet-count: 50

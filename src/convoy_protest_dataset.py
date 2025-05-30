@@ -15,21 +15,21 @@ class DatasetType(Enum):
     Enum representing different types of datasets.
 
     Attributes:
-        MENTIONERS (int): Dataset containing information about mentioners.
-        POSTERS (int): Dataset containing information about posters.
-        RETWEETERS (int): Dataset containing information about retweeters.
+        MENTIONERS (str): Dataset containing information about mentioners.
+        POSTERS (str): Dataset containing information about posters.
+        RETWEETERS (str): Dataset containing information about retweeters.
     """
-    ALL_TIMELINES = 1
-    MENTIONERS = 2
-    POSTERS = 3
-    RETWEETERS = 4
-    FLUTRUXKLAN = 5
-    HOLDTHELINE = 6
-    HONKHONK = 7
-    TRUCKERCONVOY2022 = 8
-    ISTANDWITHTRUCKERS = 9
-    ALL_HASHTAGS=10
-    ALL=11
+    ALL_TIMELINES = "all_timelines"
+    MENTIONERS = "mentioners"
+    POSTERS = "posters"
+    RETWEETERS = "retweeters"
+    FLUTRUXKLAN = "flutruxklan"
+    HOLDTHELINE = "holdtheline"
+    HONKHONK = "honkhonk"
+    TRUCKERCONVOY2022 = "truckerconvoy2022"
+    ISTANDWITHTRUCKERS = "istandwithtruckers"
+    ALL_HASHTAGS = "all_hashtags"
+    ALL = "all"
 
 
 

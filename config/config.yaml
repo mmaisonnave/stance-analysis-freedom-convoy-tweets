@@ -27,6 +27,8 @@ paths:
   tweet-stance-plot: 'data/generated/plots/tweet_stance_plot.png'
   user-stance-plot: 'data/generated/plots/user_stance_plot.png'
   hashtag-histogram-stance-plot: 'data/generated/plots/hashtag_histogram_stance_plot.png'
+  most_relevant_right_wing_tweets_per_hashtag: 'data/generated/most_relevant_right-wing_tweets_per_hashtag.json'
+  generated-data-folder: 'data/generated/'
 
 variables:
   vocab-threshold: 50
@@ -38,4 +40,9 @@ variables:
     tweet-eval-developer-prompt-name: 'openai-evaluate-tweet-developer-prompt'
     user-timeline-max-tweet-count: 50
     seed: 4056901968
+
+  create-random-sample-tweets-configuration:
+    sample-size: 100
+    seed: 3800771516
+    output-filename: 'random_sample_tweets.csv'
 

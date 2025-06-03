@@ -59,6 +59,35 @@ class ConvoyProtestDataset:
             tweets.extend(elem_or_data.get('tweets', []))
             places.extend(elem_or_data.get('places', []))
 
+    @staticmethod
+    def get_hashtag_tweets(dataset_type: DatasetType) -> list[Tweet]:
+        """
+        Retrieves tweets associated with a specific dataset type based on a predefined hashtag.
+        Args:
+            dataset_type (DatasetType): The type of dataset to filter tweets by.
+        Returns:
+            list[Tweet]: A list of tweets that contain the specified hashtag in their text.
+        Raises:
+            AssertionError: If the provided dataset_type is not one of the predefined types.
+        """
+        assert dataset_type in {DatasetType.FLUTRUXKLAN,
+                                DatasetType.HOLDTHELINE,
+                                DatasetType.HONKHONK,
+                                DatasetType.TRUCKERCONVOY2022,
+                                DatasetType.ISTANDWITHTRUCKERS
+                                }
+        dataset_type2hashtag = {
+            DatasetType.FLUTRUXKLAN: '#FluTruxKlan',
+            DatasetType.HOLDTHELINE: '#HoldTheLine',
+            DatasetType.HONKHONK: '#HonkHonk',
+            DatasetType.TRUCKERCONVOY2022: '#TruckerConvoy2022',
+            DatasetType.ISTANDWITHTRUCKERS: '#IStandWithTruckers'
+        }
+        _, tweets, _ = ConvoyProtestDataset.get_dataset(data_type=DatasetType.ALL,
+                                                        removed_repeated=True)
+        return [tweet
+                for tweet in tweets
+                if dataset_type2hashtag[dataset_type].lower() in tweet.text.lower()]
 
     @staticmethod
     def _process_json_file(json_filename):

@@ -268,7 +268,8 @@ def hashtag_plots() -> None:
                          DatasetType.TRUCKERCONVOY2022,
                          DatasetType.ISTANDWITHTRUCKERS
                          ]:
-        _, tweets, _ = ConvoyProtestDataset.get_dataset(data_type=dataset_type, removed_repeated=True)
+        # _, tweets, _ = ConvoyProtestDataset.get_dataset(data_type=dataset_type, removed_repeated=True)
+        tweets = ConvoyProtestDataset.get_hashtag_tweets(dataset_type)
         output_plot = f"{base}_{dataset_type.value}{ext}"
         tweet_plot(tweets=tweets, output_plot=output_plot)
 

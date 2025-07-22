@@ -21,6 +21,8 @@ paths:
   example-user-timelines: 'data/generated/usersTimelines/example_user_timelines.txt'
   personal-openai-api-key: 'config/personal_openai_api_key.txt'
   project-openai-api-key: 'config/project_openai_api_key.txt'
+  project-2-openai-api-key: 'config/project_2_openai_api_key.txt'
+
   prompts-folder: 'config/prompts/'
   user-evaluation-output: 'data/generated/users_evaluation_using_openai.json'
   tweet-evaluation-output: 'data/generated/tweets_evaluation_using_openai.json'
@@ -29,6 +31,9 @@ paths:
   hashtag-histogram-stance-plot: 'data/generated/plots/hashtag_histogram_stance_plot.png'
   most_relevant_right_wing_tweets_per_hashtag: 'data/generated/most_relevant_right-wing_tweets_per_hashtag.json'
   generated-data-folder: 'data/generated/'
+  raw-data-folder: 'data/raw/'
+  url-database: 'data/generated/url_database.csv'
+  url-database-folder: 'data/generated/url_database/'
 
 variables:
   vocab-threshold: 50
@@ -46,3 +51,15 @@ variables:
     seed: 3800771516
     output-filename: 'random_sample_tweets.csv'
 
+  URL-summarizer-configuration:
+    model-name: 'gpt-4.1-nano-2025-04-14'
+    openai-key: 'project_key_2'
+    prompt: >
+      You are a useful assistant that recieves the html of a webpage and summarizes it in a concise way.
+      The summary should one paragraph long. It should start stating what kind of 
+      webpage it is (e.g., news article, blog post, etc.).
+      The summary should be written in a neutral tone, without any personal opinions or biases.
+      The summary should include the main points of the webpage, but not every detail.
+      The summary should be easy to read and understand, even for someone who is not familiar with the topic.
+      DO NOT make any assumptions about the content of the webpage and do not make up any information.
+    temperature: 0.0

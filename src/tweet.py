@@ -67,6 +67,7 @@ class Tweet:
     possibly_sensitive: bool
     referenced_tweets: Optional[List[Dict[str, str]]] = None
     author_username: Optional[str] = None
+    entities: Optional[dict] = None
 
 
     @staticmethod
@@ -92,7 +93,8 @@ class Tweet:
             str(dictionary['id']),
             str(dictionary['conversation_id']),
             html.unescape(dictionary['text']),
-            dictionary['possibly_sensitive']
+            dictionary['possibly_sensitive'],
+            entities=dictionary.get('entities', None),
         )
 
         # Handle optional keys

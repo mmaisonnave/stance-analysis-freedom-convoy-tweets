@@ -41,6 +41,11 @@ def main():
     tweets = [tweet for tweet in tweets if start_date <= tweet.created_at <= end_date]
     io.info(f'Filtered tweets to {len(tweets):,} tweets between {start_date.date()} and {end_date.date()}.')
 
+
+    # ========== Remove replies: ==========
+    tweets = [tweet for tweet in tweets if not tweet.is_reply]
+    io.info(f'Tweet count with replies removed:          {len(tweets):,}')
+
     # ========== Remove retweets: ========== 
     tweets = [tweet for tweet in tweets if not tweet.is_retweet]
     io.info(f'Tweet count with retweets removed:         {len(tweets):,}')

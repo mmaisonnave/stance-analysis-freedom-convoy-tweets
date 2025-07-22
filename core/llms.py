@@ -12,65 +12,122 @@ from src import io
 from typing import List
 from src.tweet import Tweet
 from openai import OpenAI
-
+import requests
+from bs4 import BeautifulSoup
 
 # class TweetPoliticalAlignment(Enum):
 #     NEUTRAL = "neutral"
 #     LEFT = "left-wing"
 #     RIGHT = "right-wing"
 
-class StanceDetector:
+
+class URLSummarizer:
 
     def __init__(self):
-        config = PathsHandler()
-        stance_detector_config = config.get_variable('stance-detector-configuration')
-        model_name = stance_detector_config['model-name']
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
-        if self.tokenizer.pad_token_id is None:
-            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+        self.config = PathsHandler()
 
-        self.pipe = pipeline(
-              "text-generation",
-              model=model_name,
-              tokenizer=self.tokenizer,
-              pad_token_id= self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
-              torch_dtype=torch.bfloat16,
-              device_map="mps",
-              )
-        
-        self.system_messages = {
-              "role": "system", 
-              "content": stance_detector_config['system-prompt']
-              }
 
-    def evaluate_batch(self, tweets: list[str]) -> list[int]:
-        prompts = [
-            {
-                "role": "user",
-                "content": f"Tweet: {tweet}\nOutput:"
-            }
-            for tweet in tweets
-        ]
-        
-        # Repeat the system message for each input
-        full_inputs = [[self.system_messages, prompt] for prompt in prompts]
+        self.url_summarized = self.config.get_variable('URL-summarizer-configuration')
+        io.info(f'Using detector configuration={self.url_summarized}')
 
-        outputs = self.pipe(
-            full_inputs,
-            max_new_tokens=3,
-            batch_size=8,  # Adjust based on your hardware
+        # Retrieving vars from config:
+        which_key = self.url_summarized['openai-key']
+
+        io.info(f'Using key= {which_key}')
+
+        self.client = OpenAI(api_key= self.config.get_api_key(which=which_key))
+
+    @staticmethod
+    def _fetch_content(url: str) -> str:
+        """
+        Fetch the content of a URL.
+        """
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return BeautifulSoup(response.text, 'html.parser').get_text()
+        except requests.RequestException as e:
+            io.error(f"Error fetching {url}: {e}")
+            return None
+
+    def process_url(self, url: str) -> dict:
+        content = self._fetch_content(url)
+        if not content:
+            return {'URL': url, 'summary': 'Error fetching content.'}
+        response = self.client.responses.create(
+            model=self.url_summarized['model-name'],
+            input=[
+                {
+                    "role": "developer",
+                    "content": self.url_summarized['prompt']
+                },
+                {
+                    "role": "user",
+                    "content": "HTML of the URL to summarize:\n(URL={url})\nCONTENT:\n```{content}```\n".format(url=self._fetch_content(url),
+                                                                                                                content=content)
+                },
+            ],
+            temperature=0
         )
+        return {
+            'URL': url, 
+            'content': content,
+            'summary': response.output_text
+            }
 
-        scores = []
-        for out in outputs:
-            try:
-                score = int(out["generated_text"][-1]['content'])  # Ensure correct access pattern
-                assert 0 <= score <= 10 or score == -1
-            except Exception:
-                score = -1  # Fallback for malformed outputs
-            scores.append(score)
 
-        return scores
+# class StanceDetector:
+
+#     def __init__(self):
+#         config = PathsHandler()
+#         stance_detector_config = config.get_variable('stance-detector-configuration')
+#         model_name = stance_detector_config['model-name']
+#         self.tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side="left")
+#         if self.tokenizer.pad_token_id is None:
+#             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+
+#         self.pipe = pipeline(
+#               "text-generation",
+#               model=model_name,
+#               tokenizer=self.tokenizer,
+#               pad_token_id= self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
+#               torch_dtype=torch.bfloat16,
+#               device_map="mps",
+#               )
+        
+#         self.system_messages = {
+#               "role": "system", 
+#               "content": stance_detector_config['system-prompt']
+#               }
+
+#     def evaluate_batch(self, tweets: list[str]) -> list[int]:
+#         prompts = [
+#             {
+#                 "role": "user",
+#                 "content": f"Tweet: {tweet}\nOutput:"
+#             }
+#             for tweet in tweets
+#         ]
+        
+#         # Repeat the system message for each input
+#         full_inputs = [[self.system_messages, prompt] for prompt in prompts]
+
+#         outputs = self.pipe(
+#             full_inputs,
+#             max_new_tokens=3,
+#             batch_size=8,  # Adjust based on your hardware
+#         )
+
+#         scores = []
+#         for out in outputs:
+#             try:
+#                 score = int(out["generated_text"][-1]['content'])  # Ensure correct access pattern
+#                 assert 0 <= score <= 10 or score == -1
+#             except Exception:
+#                 score = -1  # Fallback for malformed outputs
+#             scores.append(score)
+
+#         return scores
 
 
 

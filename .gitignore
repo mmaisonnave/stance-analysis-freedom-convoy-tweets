@@ -178,3 +178,7 @@ notebooks/*
 .vscode/
 config/personal_openai_api_key.txt
 config/project_openai_api_key.txt
+config/project_2_openai_api_key.txt
+
+
+playground/

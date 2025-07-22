@@ -58,6 +58,8 @@ class PathsHandler:
             path = self.get_path('personal-openai-api-key')
         elif which == 'project_key':
             path = self.get_path('project-openai-api-key')
+        elif which == 'project_key_2':
+            path = self.get_path('project-2-openai-api-key')
         else:
             raise ValueError('Invalid type of api key detected')
         

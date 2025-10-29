@@ -40,14 +40,14 @@ variables:
 
   openai-tweet-stance-detector-configuration:
     model-name: 'gpt-4.1-nano-2025-04-14'
-    openai-key: 'project_key'
+    openai-key: 'project_key_2'
     user-eval-developer-prompt-name: 'openai-evaluate-user-developer-prompt'
     tweet-eval-developer-prompt-name: 'openai-evaluate-tweet-developer-prompt'
     user-timeline-max-tweet-count: 50
     seed: 4056901968
 
   create-random-sample-tweets-configuration:
-    sample-size: 100
+    target-sizes: [35, 30, 35]  # 40% left, 20% neutral, 40% right
     seed: 3800771516
     output-filename: 'random_sample_tweets.csv'
 

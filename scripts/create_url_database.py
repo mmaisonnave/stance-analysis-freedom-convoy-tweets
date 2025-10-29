@@ -242,7 +242,7 @@ def fetch_content_all_urls():
     io.info(f"Number of URLs with status 'fetched': {len(df[df['status'] == 'fetched']):,}")
     io.info(f"Number of URLs with status 'error':   {len(df[df['status'] == 'error']):,}")
 
-    cap=500
+    cap=5000
     io.info(f"Setting a limit of {cap} URLs to fetch in this run.")
 
     for idx, row in df.iterrows():

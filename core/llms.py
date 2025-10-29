@@ -236,7 +236,7 @@ class OpenAIStanceDetector:
                     "content": user_content
                 }
             ],
-            temperature=0 
+            temperature=0,
         )
 
         # io.info(f'Response:             {llm_response}')
